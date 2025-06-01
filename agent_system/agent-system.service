@@ -1,0 +1,30 @@
+[Unit]
+Description=Self-Improving Agent System - Complete Foundation
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/the-system/agent_system
+Environment=PATH=/home/ubuntu/the-system/agent_system/venv/bin
+ExecStart=/home/ubuntu/the-system/agent_system/venv/bin/python -m api.main
+Restart=always
+RestartSec=10
+
+# Environment
+EnvironmentFile=/home/ubuntu/the-system/agent_system/.env
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/ubuntu/the-system/agent_system
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=agent-system
+
+[Install]
+WantedBy=multi-user.target
