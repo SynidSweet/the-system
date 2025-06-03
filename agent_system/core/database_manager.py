@@ -5,7 +5,7 @@ from config.database import db_manager
 from .models import (
     Agent, Task, Message, Tool, ContextDocument, SystemEvent,
     TaskStatus, MessageType, AgentStatus, ToolStatus, EventSeverity,
-    serialize_for_db, deserialize_from_db
+    ModelConfig, serialize_for_db, deserialize_from_db
 )
 
 
@@ -39,6 +39,9 @@ class AgentRepository:
             return None
         
         row = results[0]
+        model_config_data = deserialize_from_db(row['model_config'], dict) or {}
+        model_config = ModelConfig(**model_config_data) if model_config_data else ModelConfig()
+        
         return Agent(
             id=row['id'],
             name=row['name'],
@@ -48,7 +51,7 @@ class AgentRepository:
             available_tools=deserialize_from_db(row['available_tools']) or [],
             permissions=deserialize_from_db(row['permissions'], dict),
             constraints=deserialize_from_db(row['constraints'], dict),
-            model_config=deserialize_from_db(row['model_config'], dict),
+            model_config=model_config,
             created_at=row['created_at'],
             updated_at=row['updated_at'],
             created_by=row['created_by'],
@@ -94,6 +97,9 @@ class AgentRepository:
     
     async def _row_to_agent(self, row: Dict[str, Any]) -> Agent:
         """Convert database row to Agent object"""
+        model_config_data = deserialize_from_db(row['model_config'], dict) or {}
+        model_config = ModelConfig(**model_config_data) if model_config_data else ModelConfig()
+        
         return Agent(
             id=row['id'],
             name=row['name'],
@@ -103,7 +109,7 @@ class AgentRepository:
             available_tools=deserialize_from_db(row['available_tools']) or [],
             permissions=deserialize_from_db(row['permissions'], dict),
             constraints=deserialize_from_db(row['constraints'], dict),
-            model_config=deserialize_from_db(row['model_config'], dict),
+            model_config=model_config,
             created_at=row['created_at'],
             updated_at=row['updated_at'],
             created_by=row['created_by'],
@@ -153,6 +159,17 @@ class TaskRepository:
     async def get_active_tasks(self) -> List[Task]:
         """Get all active tasks"""
         query = "SELECT * FROM active_tasks ORDER BY priority DESC, created_at"
+        results = await db_manager.execute_query(query)
+        return [self._row_to_task(row) for row in results]
+    
+    async def get_all_root_tasks(self) -> List[Task]:
+        """Get all root tasks (tasks with no parent)"""
+        query = """
+        SELECT * FROM tasks 
+        WHERE parent_task_id IS NULL 
+        ORDER BY created_at DESC
+        LIMIT 100
+        """
         results = await db_manager.execute_query(query)
         return [self._row_to_task(row) for row in results]
     
