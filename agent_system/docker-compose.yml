@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  agent-system:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./data:/app/data"
+      - "./logs:/app/logs"
+      - "./.git:/app/.git"  # For self-modification capabilities
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=sqlite:///data/agent_system.db
+      - MAX_CONCURRENT_AGENTS=3
+      - DEFAULT_TIMEOUT_SECONDS=300
+      # Add your API keys here or use a .env file
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - agent-system-init
+
+  # Initialization service (runs once)
+  agent-system-init:
+    build: .
+    volumes:
+      - "./data:/app/data"
+    environment:
+      - DATABASE_URL=sqlite:///data/agent_system.db
+    command: ["python", "scripts/init_system.py"]
+    restart: "no"
+
+volumes:
+  agent_data:
+  agent_logs:

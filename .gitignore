@@ -1,0 +1,33 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+venv/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+
+# Local Claude artifacts
+.claude/
+
+# Logs & output
+*.log
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Environment files
+agent_system/.env
+.env

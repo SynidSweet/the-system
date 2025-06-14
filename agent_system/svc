@@ -1,0 +1,8 @@
+#!/bin/bash
+# Quick service management wrapper
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENV_PYTHON="$SCRIPT_DIR/../venv/bin/python"
+
+# Use the Python service manager for detailed feedback
+exec "$VENV_PYTHON" "$SCRIPT_DIR/scripts/service_manager.py" "$@"

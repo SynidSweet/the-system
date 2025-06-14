@@ -1,0 +1,15 @@
+[Unit]
+Description=Agent System Frontend
+After=network.target agent-system-backend.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/system.petter.ai/agent_system/web
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/usr/local/bin/yarn start
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
