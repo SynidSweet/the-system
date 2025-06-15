@@ -22,7 +22,6 @@ Every agent instance has identical structure:
 4. `request_tools()` - Spawn tool discovery/creation agent  
 5. `end_task(status, result)` - Mark task complete (success/failure)
 6. `flag_for_review(issue)` - Queue item for manual review
-7. `think_out_loud()` - Log reasoning and planning thoughts
 
 ### Database Schema (SQLite)
 
@@ -104,7 +103,7 @@ CREATE TABLE tools (
 
 ## Required Agents (Initial Database Seed)
 
-*Note: The system includes 10 core agents, each with specialized capabilities.*
+*Note: The system includes 9 core agents, each with specialized capabilities.*
 
 ### 1. Agent Selector (`agent_selector`)
 - **Instruction**: "Analyze the given task and select the most appropriate agent type to handle it. If no suitable agent exists, create a new agent configuration."
@@ -131,27 +130,22 @@ CREATE TABLE tools (
 - **Context**: Task evaluation criteria
 - **Tools**: Core toolkit
 
-### 6. Supervisor Agent (`supervisor`)
-- **Instruction**: "Monitor long-running or potentially stuck agents and determine if intervention is needed."
-- **Context**: System monitoring guidelines
-- **Tools**: Core toolkit + system monitoring
-
-### 7. Documentation Agent (`documentation_agent`)
+### 6. Documentation Agent (`documentation_agent`)
 - **Instruction**: "Document any system changes, new procedures, or important discoveries from the completed task. Always triggered in parallel with task evaluator."
 - **Context**: Documentation standards, existing system documentation
 - **Tools**: Core toolkit + database access
 
-### 8. Summary Agent (`summary_agent`)
+### 7. Summary Agent (`summary_agent`)
 - **Instruction**: "Create a concise summary of task execution and results for the parent agent, filtering out redundant details."
 - **Context**: Summarization guidelines
 - **Tools**: Core toolkit + message history access
 
-### 9. Review Agent (`review_agent`)
+### 8. Review Agent (`review_agent`)
 - **Instruction**: "Analyze flagged issues and determine system improvements needed."
 - **Context**: System improvement guidelines
 - **Tools**: Core toolkit + code modification + git operations
 
-### 10. Agent Creator (`agent_creator`)
+### 9. Agent Creator (`agent_creator`)
 - **Instruction**: "Create new specialized agent configurations based on system needs. Design appropriate instructions, identify required context documents, and determine necessary permissions."
 - **Context**: Agent design principles, existing agent patterns
 - **Tools**: Core toolkit + database write access

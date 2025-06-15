@@ -23,7 +23,6 @@ class Settings(BaseSettings):
     default_timeout_seconds: int = 300
     environment: str = "development"
     debug_mode: bool = True
-    supervisor_check_interval: int = 60
     
     # Model Configuration
     default_model_provider: str = "google"

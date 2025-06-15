@@ -495,56 +495,6 @@ class FlagForReviewTool(CoreMCPTool):
         )
 
 
-class ThinkOutLoudTool(CoreMCPTool):
-    """Log reasoning and planning thoughts"""
-    
-    def __init__(self):
-        super().__init__(
-            name="think_out_loud",
-            description="Log reasoning, planning thoughts, and decision-making process",
-            parameters={
-                "type": "object",
-                "properties": {
-                    "thoughts": {
-                        "type": "string",
-                        "description": "The agent's reasoning, planning, or thought process"
-                    },
-                    "thought_type": {
-                        "type": "string",
-                        "enum": ["planning", "reasoning", "decision", "observation", "reflection"],
-                        "description": "Type of thought being logged",
-                        "default": "reasoning"
-                    },
-                    "confidence": {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 1,
-                        "description": "Confidence level in this reasoning (0-1)",
-                        "default": 0.5
-                    }
-                },
-                "required": ["thoughts"]
-            }
-        )
-    
-    async def execute(self, **kwargs) -> MCPToolResult:
-        thoughts = kwargs.get("thoughts")
-        thought_type = kwargs.get("thought_type", "reasoning")
-        confidence = kwargs.get("confidence", 0.5)
-        
-        # TODO: Implement actual thought logging
-        # This should log the thoughts to the message history with special formatting
-        
-        return MCPToolResult(
-            success=True,
-            result=f"Logged {thought_type}: {thoughts[:100]}...",
-            metadata={
-                "tool_name": "think_out_loud",
-                "thought_type": thought_type,
-                "confidence": confidence,
-                "action": "log_thoughts"
-            }
-        )
 
 
 # Register all core tools
@@ -556,8 +506,7 @@ def register_core_tools(registry):
         RequestContextTool(),
         RequestToolsTool(),
         EndTaskTool(),
-        FlagForReviewTool(),
-        ThinkOutLoudTool()
+        FlagForReviewTool()
     ]
     
     for tool in core_tools:

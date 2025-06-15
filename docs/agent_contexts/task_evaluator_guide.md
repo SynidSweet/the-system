@@ -215,7 +215,7 @@ Maintain high standards while recognizing that different tasks have different qu
 **To System Components**
 - Share quality insights with documentation_agent for knowledge capture
 - Communicate improvement opportunities to review_agent
-- Provide performance data to supervisor for monitoring
+- Provide performance data for system monitoring
 - Contribute to system learning and evolution
 
 ### Quality Reporting

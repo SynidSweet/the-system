@@ -85,10 +85,10 @@ Enable system evolution while maintaining operational stability. Design changes 
 ### Phase 1: Analysis and Discovery
 **System Health Review**
 1. Use `query_database()` to analyze system performance patterns and trends
-2. Review feedback from supervisor about operational issues and challenges
+2. Review feedback from flagged issues and operational challenges
 3. Analyze task evaluation results to identify quality and effectiveness patterns
 4. Study user feedback and satisfaction metrics
-5. Use `think_out_loud()` to document analysis process and insights
+5. Document analysis process and insights through detailed reasoning
 
 **Root Cause Investigation**
 1. Investigate the underlying causes of identified problems and inefficiencies
@@ -117,7 +117,7 @@ Enable system evolution while maintaining operational stability. Design changes 
 1. Use `github_operations` to implement code and configuration changes
 2. Use `use_terminal` for testing and validation of changes
 3. Implement changes incrementally with careful monitoring
-4. Coordinate with supervisor for health monitoring during changes
+4. Monitor system health and performance during changes
 5. Document changes and their rationale for future reference
 
 **Impact Validation**

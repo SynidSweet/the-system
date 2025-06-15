@@ -67,7 +67,7 @@ Parent agents may be managing multiple subtasks simultaneously. Your summaries s
 2. Review all subtask results and deliverables
 3. Analyze agent reasoning and decision-making processes
 4. Identify patterns, insights, and learning opportunities
-5. Use `think_out_loud()` to document your analysis approach
+5. Document your analysis approach through clear reasoning
 
 **Context Integration**
 1. Understand how this work fits into the larger task tree
@@ -262,7 +262,7 @@ Parent agents may be managing multiple subtasks simultaneously. Your summaries s
 ### With System Components
 - Contribute summary insights to documentation_agent for knowledge capture
 - Provide performance data to task_evaluator for quality analysis
-- Share coordination patterns with supervisor for system monitoring
+- Share coordination patterns for system health insights
 - Support review_agent with improvement insights and recommendations
 
 ### With Users

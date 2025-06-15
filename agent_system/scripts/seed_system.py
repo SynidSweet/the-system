@@ -58,11 +58,11 @@ CORE DECISION PROCESS:
 3. Does this match a specialized agent's domain? → Route to specialist
 4. No existing agent fits well? → Request creation of new agent type
 
-Always use think_out_loud() to explain your reasoning and end with end_task().
+Always end with end_task().
 
 Focus on enabling emergent intelligence through smart composition of capabilities rather than rigid categorization.""",
             "context_documents": ["agent_selector_guide", "system_overview", "agent_registry"],
-            "available_tools": ["list_agents", "query_database", "think_out_loud"],
+            "available_tools": ["list_agents", "query_database"],
             "permissions": AgentPermissions(web_search=True, spawn_agents=True)
         },
         {
@@ -76,9 +76,9 @@ CORE APPROACH:
 4. Match subtasks to agent specializations
 5. Plan integration and coordination strategy
 
-Use think_out_loud() to document your decomposition reasoning. Focus on enabling emergence through composition rather than rigid control.""",
+Focus on enabling emergence through composition rather than rigid control.""",
             "context_documents": ["task_breakdown_guide", "breakdown_guidelines", "system_architecture"],
-            "available_tools": ["think_out_loud"],
+            "available_tools": [],
             "permissions": AgentPermissions(spawn_agents=True)
         },
         {
@@ -92,9 +92,9 @@ CORE APPROACH:
 4. Design knowledge for reusability across future tasks
 5. Build the system's growing expertise systematically
 
-Focus on knowledge that directly enables action, not just information. Use think_out_loud() to document your reasoning.""",
+Focus on knowledge that directly enables action, not just information.""",
             "context_documents": ["context_addition_guide", "available_context", "documentation_standards"],
-            "available_tools": ["list_documents", "use_terminal", "query_database", "think_out_loud"],
+            "available_tools": ["list_documents", "use_terminal", "query_database"],
             "permissions": AgentPermissions(web_search=True, database_write=True, file_system=True)
         },
         {
@@ -108,9 +108,9 @@ CORE APPROACH:
 4. Design for reusability across multiple future needs
 5. Create tools that become building blocks for capabilities you never anticipated
 
-Focus on building capability patterns, not just individual tools. Use think_out_loud() to document your reasoning.""",
+Focus on building capability patterns, not just individual tools.""",
             "context_documents": ["tool_addition_guide", "tool_registry", "mcp_documentation"],
-            "available_tools": ["list_optional_tools", "github_operations", "use_terminal", "query_database", "think_out_loud"],
+            "available_tools": ["list_optional_tools", "github_operations", "use_terminal", "query_database"],
             "permissions": AgentPermissions(web_search=True, database_write=True, file_system=True, shell_access=True)
         },
         {
@@ -124,9 +124,9 @@ CORE APPROACH:
 4. Provide feedback that helps agents and system improve
 5. Extract patterns that inform system evolution
 
-Evaluate functional, completeness, craft, documentation, and integration quality. Use think_out_loud() to explain your reasoning.""",
+Evaluate functional, completeness, craft, documentation, and integration quality.""",
             "context_documents": ["task_evaluator_guide", "evaluation_criteria", "quality_standards"],
-            "available_tools": ["query_database", "think_out_loud"],
+            "available_tools": ["query_database"],
             "permissions": AgentPermissions(database_write=True)
         },
         {
@@ -140,9 +140,9 @@ CORE APPROACH:
 4. Capture emerging patterns and reusable insights
 5. Build the system's institutional memory and expertise
 
-Create documentation that makes agents more capable. Use think_out_loud() to document your approach.""",
+Create documentation that makes agents more capable.""",
             "context_documents": ["documentation_agent_guide", "documentation_standards", "system_architecture"],
-            "available_tools": ["list_documents", "query_database", "think_out_loud"],
+            "available_tools": ["list_documents", "query_database"],
             "permissions": AgentPermissions(database_write=True, file_system=True)
         },
         {
@@ -156,26 +156,10 @@ CORE APPROACH:
 4. Extract strategic implications and coordination needs
 5. Enable learning and knowledge transfer between agents
 
-Create summaries that enable effective action by receiving agents. Use think_out_loud() to explain your synthesis approach.""",
+Create summaries that enable effective action by receiving agents.""",
             "context_documents": ["summary_agent_guide", "summarization_guidelines"],
-            "available_tools": ["query_database", "think_out_loud"],
+            "available_tools": ["query_database"],
             "permissions": AgentPermissions()
-        },
-        {
-            "name": "supervisor",
-            "instruction": """You are the system's health guardian and operational overseer. Monitor agent behavior, detect problems, and ensure reliable autonomous operation through preventive oversight and early intervention.
-
-CORE APPROACH:
-1. Think in system health patterns, not individual incidents
-2. Focus on prevention and early detection over reactive fixes
-3. Balance autonomy with oversight - support rather than control
-4. Monitor performance, quality, resource, and failure patterns
-5. Enable autonomous operation through intelligent safety nets
-
-Detect and address problems before they become critical. Use think_out_loud() to document your monitoring insights.""",
-            "context_documents": ["supervisor_guide", "monitoring_guidelines", "system_limits"],
-            "available_tools": ["use_terminal", "query_database", "think_out_loud"],
-            "permissions": AgentPermissions(database_write=True, shell_access=True)
         },
         {
             "name": "review_agent",
@@ -188,9 +172,9 @@ CORE APPROACH:
 4. Balance innovation with stability during changes
 5. Design improvements that enable accelerating evolution
 
-Implement changes that make the system smarter and more capable over time. Use think_out_loud() to document your improvement reasoning.""",
+Implement changes that make the system smarter and more capable over time.""",
             "context_documents": ["review_agent_guide", "improvement_guide", "system_architecture"],
-            "available_tools": ["github_operations", "use_terminal", "query_database", "think_out_loud"],
+            "available_tools": ["github_operations", "use_terminal", "query_database"],
             "permissions": AgentPermissions(web_search=True, database_write=True, file_system=True, shell_access=True, git_operations=True)
         }
     ]
@@ -306,12 +290,6 @@ async def seed_context_documents():
             "content": Path(__file__).parent.parent.parent.joinpath("docs/agent_contexts/summary_agent_guide.md").read_text()
         },
         {
-            "name": "supervisor_guide",
-            "title": "Supervisor - System Monitoring and Health Management Guide",
-            "category": "agent_guide",
-            "content": Path(__file__).parent.parent.parent.joinpath("docs/agent_contexts/supervisor_guide.md").read_text()
-        },
-        {
             "name": "review_agent_guide", 
             "title": "Review Agent - System Improvement and Evolution Guide",
             "category": "agent_guide",
@@ -360,11 +338,6 @@ async def seed_context_documents():
 **Purpose**: Information synthesis and reporting
 **Use when**: Need concise summaries for parent agents
 **Capabilities**: Synthesizes information, creates reports, filters noise
-
-### supervisor
-**Purpose**: System monitoring and oversight
-**Use when**: Need to monitor system health and agent behavior
-**Capabilities**: Monitors performance, detects issues, intervenes when needed
 
 ### review_agent
 **Purpose**: System improvement and optimization

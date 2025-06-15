@@ -113,7 +113,7 @@ This is a recursive agent system that starts minimal and builds itself up.
 
 The system begins with only:
 - Universal Agent Runtime (executes any task configuration)
-- Core MCP Toolkit (7 tools for recursion and coordination)
+- Core MCP Toolkit (6 tools for recursion and coordination)
 - Database (agents, tasks, messages)
 - Agent Selector (routes tasks and builds missing capabilities)
 
@@ -132,7 +132,6 @@ When agents need capabilities that don't exist, they use:
 4. request_tools() - Get new capabilities built
 5. end_task() - Complete tasks with results
 6. flag_for_review() - Human oversight queue
-7. think_out_loud() - Transparent reasoning
 
 ## Current State: Minimal Bootstrap
 

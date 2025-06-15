@@ -290,7 +290,7 @@ class SystemTester:
         try:
             expected_agents = [
                 "agent_selector", "task_breakdown", "context_addition", "tool_addition",
-                "task_evaluator", "documentation_agent", "summary_agent", "supervisor", "review_agent"
+                "task_evaluator", "documentation_agent", "summary_agent", "review_agent"
             ]
             
             missing_agents = []
@@ -385,10 +385,10 @@ class SystemTester:
     async def _test_core_tools(self) -> Dict[str, Any]:
         """Test core tool instantiation"""
         try:
-            from tools.core_mcp.core_tools import ThinkOutLoudTool
+            from tools.core_mcp.core_tools import EndTaskTool
             
-            tool = ThinkOutLoudTool()
-            result = await tool.execute(thoughts="Test thought", thought_type="reasoning")
+            tool = EndTaskTool()
+            result = await tool.execute(status="success", result="Test completed")
             
             if result.success:
                 return {

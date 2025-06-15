@@ -49,7 +49,7 @@ async def seed_core_agents():
             "name": "agent_selector",
             "instruction": "Analyze the given task and select the most appropriate agent type to handle it. If no suitable agent exists, recommend creating a new agent configuration. Consider task complexity, required skills, and available agent capabilities.",
             "context_documents": ["system_overview", "agent_registry"],
-            "available_tools": ["database_query", "think_out_loud"],
+            "available_tools": ["database_query"],
             "permissions": AgentPermissions(
                 web_search=True,
                 database_write=False,
@@ -60,7 +60,7 @@ async def seed_core_agents():
             "name": "task_breakdown",
             "instruction": "Break down the given task into sequential subtasks that can be handled by individual agents. Ensure each subtask is specific, actionable, and has clear success criteria. Consider dependencies between subtasks.",
             "context_documents": ["breakdown_guidelines", "system_architecture"],
-            "available_tools": ["think_out_loud"],
+            "available_tools": [],
             "permissions": AgentPermissions(
                 spawn_agents=True
             )
@@ -111,18 +111,8 @@ async def seed_core_agents():
             "name": "summary_agent",
             "instruction": "Create a concise summary of task execution and results for the parent agent, filtering out redundant details while preserving essential information and insights.",
             "context_documents": ["summarization_guidelines"],
-            "available_tools": ["database_query", "think_out_loud"],
+            "available_tools": ["database_query"],
             "permissions": AgentPermissions()
-        },
-        {
-            "name": "supervisor",
-            "instruction": "Monitor long-running or potentially stuck agents and determine if intervention is needed. Handle timeouts, resource exhaustion, and infinite loops. Escalate critical issues.",
-            "context_documents": ["monitoring_guidelines", "system_limits"],
-            "available_tools": ["database_query", "terminal_execution"],
-            "permissions": AgentPermissions(
-                database_write=True,
-                shell_access=True
-            )
         },
         {
             "name": "review_agent",

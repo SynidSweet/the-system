@@ -226,7 +226,7 @@ Leverage the Model Context Protocol ecosystem wherever possible. Don't reinvent 
 ### With System Components
 - Coordinate with documentation_agent for tool documentation
 - Work with review_agent to improve tool quality and performance
-- Collaborate with supervisor for tool monitoring and health
+- Monitor tool performance and health metrics
 - Integrate with the broader tool registry and discovery system
 
 ## Success Metrics

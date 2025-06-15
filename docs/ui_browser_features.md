@@ -56,7 +56,6 @@ Essential MCP tools for agent collaboration:
 - `request_tools` - Capability discovery
 - `end_task` - Task completion
 - `flag_for_review` - Human oversight
-- `think_out_loud` - Transparent reasoning
 
 #### System Tools
 Internal system management:

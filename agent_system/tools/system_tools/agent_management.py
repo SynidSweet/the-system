@@ -53,7 +53,7 @@ class CreateAgentTool(BaseMCPTool):
                 instruction=instruction,
                 system_prompt=parameters.get("system_prompt", "You are a specialized agent in a self-improving system."),
                 context_documents=parameters.get("context_documents", []),
-                available_tools=parameters.get("available_tools", ["think_out_loud", "end_task"]),
+                available_tools=parameters.get("available_tools", ["end_task"]),
                 permissions=parameters.get("permissions", {}),
                 constraints=parameters.get("constraints", {}),
                 llm_config=parameters.get("llm_config", {"model": "claude-3-sonnet-20240229"}),

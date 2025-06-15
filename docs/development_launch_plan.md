@@ -5,7 +5,7 @@
 ## Current Implementation Status
 
 ### System Overview
-- ✅ **Complete Foundation Deployed**: All 10 core agents operational
+- ✅ **Complete Foundation Deployed**: All 9 core agents operational
 - ✅ **AI Model**: Google Gemini 2.5 Flash (`gemini-2.5-flash-preview-05-20`)
 - ✅ **Database**: SQLite with comprehensive schema
 - ✅ **API**: FastAPI with WebSocket support
@@ -227,14 +227,14 @@ class CoreMCPTools:
 - System can restart itself cleanly
 - Changes persist across restarts
 
-### Week 5: Supervision & UI
-**Goal**: Monitoring and user interface
+### Week 5: Evaluation & UI
+**Goal**: Quality control and user interface
 
 **Deliverables**:
-- Supervisor agent with timeout handling
 - Task evaluator agent
 - React frontend with real-time updates
 - Review queue interface
+- Timeout handling in task manager
 
 **Success Criteria**:
 - Stuck agents are detected and handled
@@ -491,7 +491,7 @@ The human developer's role shifts from coding to:
 ## Current System Status (As of Latest Update)
 
 ### Completed Components
-- ✅ **All 10 Core Agents**: Fully operational with specialized capabilities
+- ✅ **All 9 Core Agents**: Fully operational with specialized capabilities
 - ✅ **Universal Agent Runtime**: Complete implementation in `core/universal_agent.py`
 - ✅ **Task Management**: Full task tree isolation and recursive spawning
 - ✅ **Database Schema**: Comprehensive schema with all tables implemented
@@ -503,7 +503,7 @@ The human developer's role shifts from coding to:
 
 ### Key Differences from Original Plan
 1. **AI Model**: Using Gemini 2.5 Flash instead of Claude/GPT-4
-2. **Agent Count**: 10 agents instead of 9 (added `agent_creator`)
+2. **Agent Count**: 9 agents (removed `supervisor`)
 3. **UI Features**: Additional browser components beyond MVP
 4. **Database Fields**: Richer schema with versioning and metadata
 5. **Service Architecture**: Full systemd integration with monitoring

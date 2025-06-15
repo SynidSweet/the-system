@@ -7,8 +7,8 @@ A **recursive agent system** with a complete foundation that builds upon itself 
 This system implements the complete **foundation** as specified in the launch plan:
 
 1. Universal Agent Runtime (executes any task configuration)
-2. Core MCP Toolkit (7 tools for recursion)
-3. Complete Agent Suite (9 specialized agents)
+2. Core MCP Toolkit (6 tools for recursion)
+3. Complete Agent Suite (8 specialized agents)
 4. Full Context Documentation (system docs + process guides)
 5. Comprehensive Toolset (internal + external integrations)
 6. Database-Driven Architecture (agents, tasks, messages, context, tools)
@@ -18,7 +18,7 @@ This system implements the complete **foundation** as specified in the launch pl
 
 ## 🆕 Recent Updates
 
-- **Enhanced Transparency**: All agents now emphasize `think_out_loud()` for transparent reasoning
+- **Built-in Thinking**: Gemini 2.5 Flash has native thinking mode for transparent reasoning
 - **Service Management**: Quick control with `./svc start/stop/status/logs` commands
 - **Web UI Browsers**: New interfaces to browse and edit agents, tools, and documents
 - **Step Mode Debugging**: Pause and step through agent execution for debugging
@@ -97,9 +97,8 @@ cd web && npm start
 4. `request_tools()` - Capability discovery
 5. `end_task()` - Task completion
 6. `flag_for_review()` - Human oversight
-7. `think_out_loud()` - Transparent reasoning (emphasized in all agent instructions)
 
-### Complete Agent Suite (9 Agents)
+### Complete Agent Suite (8 Agents)
 - **agent_selector** - Task routing and agent selection
 - **task_breakdown** - Complex problem decomposition
 - **context_addition** - Knowledge and context management
@@ -107,7 +106,6 @@ cd web && npm start
 - **task_evaluator** - Quality assessment and validation
 - **documentation_agent** - System documentation and knowledge capture
 - **summary_agent** - Information synthesis and reporting
-- **supervisor** - System monitoring and oversight
 - **review_agent** - System improvement and optimization
 
 ### Full Context Documentation
