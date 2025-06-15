@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     
     # Model Configuration
     default_model_provider: str = "google"
-    default_model_name: str = "gemini-2.0-flash-exp"
+    default_model_name: str = "gemini-2.5-flash-preview-05-20"
     default_temperature: float = 0.1
     default_max_tokens: int = 4000
     

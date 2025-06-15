@@ -4,46 +4,46 @@
 
 ### Custom MCP Tool Interface
 ```python
-# tools/mcp_tool_base.py
+# tools/base_tool.py
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
-from pydantic import BaseModel
-
-class MCPToolConfig(BaseModel):
-    name: str
-    description: str
-    parameters: Dict[str, Any]  # JSON Schema for parameters
-    permissions: List[str] = []
-    timeout_seconds: int = 300
-    retry_count: int = 0
-
-class MCPToolResult(BaseModel):
-    success: bool
-    result: Any = None
-    error_message: str = None
-    metadata: Dict[str, Any] = {}
+from typing import Dict, Any, List, Optional
+from core.models import MCPToolCall, MCPToolResult
 
 class BaseMCPTool(ABC):
-    def __init__(self, config: MCPToolConfig):
-        self.config = config
-        
+    """Base class for all MCP tools in the agent system"""
+    
+    def __init__(self, name: str, description: str, parameters: Dict[str, Any] = None):
+        self.name = name
+        self.description = description
+        self.parameters = parameters or {}
+        self.permissions: List[str] = []
+        self.timeout_seconds: int = 300
+        self.retry_count: int = 0
+    
     @abstractmethod
     async def execute(self, **kwargs) -> MCPToolResult:
         """Execute the tool with given parameters"""
         pass
-        
-    @abstractmethod
+    
     def validate_parameters(self, **kwargs) -> bool:
-        """Validate input parameters"""
-        pass
-        
+        """Validate input parameters against schema"""
+        required_params = self.parameters.get('required', [])
+        for param in required_params:
+            if param not in kwargs:
+                return False
+        return True
+    
     def get_schema(self) -> Dict[str, Any]:
         """Return JSON schema for this tool"""
         return {
-            "name": self.config.name,
-            "description": self.config.description,
-            "parameters": self.config.parameters
+            "name": self.name,
+            "description": self.description,
+            "parameters": self.parameters
         }
+    
+    async def execute_with_timeout(self, **kwargs) -> MCPToolResult:
+        """Execute tool with timeout and error handling"""
+        # Implementation includes timeout handling and retries
 ```
 
 ### MCP Tool Registry Schema
@@ -97,13 +97,14 @@ class BaseMCPTool(ABC):
     "properties": {
       "name": {"type": "string", "pattern": "^[a-z_][a-z0-9_]*$"},
       "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
-      "model": {
+      "model_config": {
         "type": "object",
         "properties": {
-          "provider": {"type": "string", "enum": ["anthropic", "openai", "local"]},
+          "provider": {"type": "string", "enum": ["anthropic", "openai", "google"]},
           "model_name": {"type": "string"},
           "temperature": {"type": "number", "minimum": 0, "maximum": 2},
-          "max_tokens": {"type": "integer", "minimum": 1, "maximum": 200000}
+          "max_tokens": {"type": "integer", "minimum": 1, "maximum": 200000},
+          "api_key": {"type": "string", "nullable": true}
         },
         "required": ["provider", "model_name"]
       },
@@ -135,9 +136,17 @@ class BaseMCPTool(ABC):
           "max_recursion_depth": {"type": "integer"},
           "memory_limit_mb": {"type": "integer"}
         }
-      }
+      },
+      "status": {
+        "type": "string",
+        "enum": ["active", "deprecated", "testing"],
+        "default": "active"
+      },
+      "created_by": {"type": "integer", "nullable": true},
+      "created_at": {"type": "string", "format": "date-time"},
+      "updated_at": {"type": "string", "format": "date-time"}
     },
-    "required": ["name", "model", "instruction"]
+    "required": ["name", "instruction"]
   }
 }
 ```

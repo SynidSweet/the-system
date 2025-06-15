@@ -1,0 +1,42 @@
+[
+  {
+    "file": "agent_system_prd.md",
+    "task_id": 7,
+    "tree_id": 7
+  },
+  {
+    "file": "architectural_schemas.md",
+    "task_id": 8,
+    "tree_id": 8
+  },
+  {
+    "file": "development_launch_plan.md",
+    "task_id": 9,
+    "tree_id": 9
+  },
+  {
+    "file": "project_principles.md",
+    "task_id": 10,
+    "tree_id": 10
+  },
+  {
+    "file": "self_improvement_guide.md",
+    "task_id": 11,
+    "tree_id": 11
+  },
+  {
+    "file": "service_management.md",
+    "task_id": 12,
+    "tree_id": 12
+  },
+  {
+    "file": "ui_browser_features.md",
+    "task_id": 13,
+    "tree_id": 13
+  },
+  {
+    "file": "SUMMARY_REPORT",
+    "task_id": 14,
+    "tree_id": 14
+  }
+]

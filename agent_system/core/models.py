@@ -67,7 +67,7 @@ class EventSeverity(str, Enum):
 
 class ModelConfig(BaseModel):
     provider: str = "google"
-    model_name: str = "gemini-2.0-flash-exp"
+    model_name: str = "gemini-2.5-flash-preview-05-20"
     temperature: float = 0.1
     max_tokens: int = 4000
     api_key: Optional[str] = None

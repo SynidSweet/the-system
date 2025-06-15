@@ -24,7 +24,7 @@ class AgentRepository:
             serialize_for_db(agent.context_documents),
             serialize_for_db(agent.available_tools),
             serialize_for_db(agent.permissions),
-            serialize_for_db(agent.model_config),
+            serialize_for_db(agent.llm_config),
             agent.created_by,
             agent.status.value
         )
@@ -46,7 +46,7 @@ class AgentRepository:
             context_documents=deserialize_from_db(row['context_documents']) or [],
             available_tools=deserialize_from_db(row['available_tools']) or [],
             permissions=deserialize_from_db(row['permissions'], dict),
-            model_config=deserialize_from_db(row['model_config'], dict),
+            llm_config=deserialize_from_db(row['model_config'], dict),
             created_at=row['created_at'],
             updated_at=row['updated_at'],
             created_by=row['created_by'],
@@ -82,7 +82,7 @@ class AgentRepository:
             serialize_for_db(agent.context_documents),
             serialize_for_db(agent.available_tools),
             serialize_for_db(agent.permissions),
-            serialize_for_db(agent.model_config),
+            serialize_for_db(agent.llm_config),
             agent.status.value,
             agent.id
         )
@@ -99,7 +99,7 @@ class AgentRepository:
             context_documents=deserialize_from_db(row['context_documents']) or [],
             available_tools=deserialize_from_db(row['available_tools']) or [],
             permissions=deserialize_from_db(row['permissions'], dict),
-            model_config=deserialize_from_db(row['model_config'], dict),
+            llm_config=deserialize_from_db(row['model_config'], dict),
             created_at=row['created_at'],
             updated_at=row['updated_at'],
             created_by=row['created_by'],

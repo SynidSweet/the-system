@@ -8,12 +8,12 @@ A single, universal agent runtime that executes tasks by recursively spawning sp
 
 ### Universal Agent Runtime
 Every agent instance has identical structure:
-- **AI Model**: Configurable (e.g., Claude, GPT-4)
+- **AI Model**: Configurable (default: Gemini 2.5 Flash)
 - **Core Instruction**: Universal system instruction (same for all agents)
 - **Task Instruction**: Specific instruction for this agent's task
 - **Context Documents**: Markdown documents attached to this agent type
 - **Available Tools**: Core MCP toolkit + subset of optional tools
-- **Web Search Permission**: Boolean flag
+- **Permissions**: Comprehensive permission system (web_search, file_system, shell_access, git_operations, database_write, spawn_agents)
 
 ### Core MCP Toolkit (Always Available)
 1. `break_down_task()` - Spawn breakdown agent for current task
@@ -29,19 +29,34 @@ Every agent instance has identical structure:
 ```sql
 -- Agent Configurations
 CREATE TABLE agents (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL,
+    version TEXT NOT NULL DEFAULT '1.0.0',
     instruction TEXT NOT NULL,
-    context_documents TEXT, -- JSON array of document IDs
+    context_documents TEXT, -- JSON array of document names
     available_tools TEXT,   -- JSON array of tool names
-    web_search_allowed BOOLEAN DEFAULT FALSE
+    permissions TEXT,       -- JSON object with permission flags
+    model_config TEXT,      -- JSON object with AI model configuration
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,     -- task_id that created this agent
+    status TEXT DEFAULT 'active' -- active, deprecated, testing
 );
 
 -- Context Documents  
 CREATE TABLE context_documents (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL,
-    content TEXT NOT NULL -- Markdown format
+    title TEXT NOT NULL,
+    content TEXT NOT NULL, -- Markdown format
+    format TEXT DEFAULT 'markdown',
+    metadata TEXT, -- JSON object
+    version TEXT DEFAULT '1.0.0',
+    category TEXT NOT NULL,
+    access_level TEXT DEFAULT 'internal',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER -- task_id that last updated
 );
 
 -- Task Management
@@ -73,14 +88,23 @@ CREATE TABLE messages (
 
 -- Optional Tools Registry
 CREATE TABLE tools (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL,
-    description TEXT,
-    mcp_config TEXT -- JSON MCP tool configuration
+    description TEXT NOT NULL,
+    category TEXT NOT NULL, -- core, system, external, generated
+    implementation TEXT NOT NULL, -- JSON object with type and config
+    parameters TEXT NOT NULL, -- JSON schema for parameters
+    permissions TEXT, -- JSON array of required permissions
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER, -- task_id that created this tool
+    status TEXT DEFAULT 'active' -- active, deprecated, testing
 );
 ```
 
 ## Required Agents (Initial Database Seed)
+
+*Note: The system includes 10 core agents, each with specialized capabilities.*
 
 ### 1. Agent Selector (`agent_selector`)
 - **Instruction**: "Analyze the given task and select the most appropriate agent type to handle it. If no suitable agent exists, create a new agent configuration."
@@ -126,6 +150,11 @@ CREATE TABLE tools (
 - **Instruction**: "Analyze flagged issues and determine system improvements needed."
 - **Context**: System improvement guidelines
 - **Tools**: Core toolkit + code modification + git operations
+
+### 10. Agent Creator (`agent_creator`)
+- **Instruction**: "Create new specialized agent configurations based on system needs. Design appropriate instructions, identify required context documents, and determine necessary permissions."
+- **Context**: Agent design principles, existing agent patterns
+- **Tools**: Core toolkit + database write access
 
 ## Core System Documentation (Initial Context Documents)
 
@@ -198,6 +227,11 @@ These documents will be seeded into the database at system launch:
 ### Review Queue
 - **Flagged Items**: List of items flagged for manual review
 - **System Logs**: Recent agent outputs and system events
+
+### Additional UI Components (Post-MVP)
+- **Agent Browser**: Browse and inspect all agent configurations
+- **Document Browser**: View and manage context documents
+- **Tool Browser**: Explore available tools and their configurations
 
 ## Success Criteria
 
