@@ -613,8 +613,8 @@ class SystemTester:
             # This would test a complete workflow simulation
             # For now, just verify key components can be loaded
             
-            from core.task_manager import TaskManager
-            from core.universal_agent import UniversalAgent
+            from core.runtime.runtime_integration import RuntimeIntegration
+            from core.universal_agent_runtime import UniversalAgentRuntime
             
             return {
                 "name": "End-to-End Workflow",
@@ -636,8 +636,8 @@ class SystemTester:
             # Test that all major components can be imported and initialized
             components = [
                 "core.database_manager",
-                "core.universal_agent", 
-                "core.task_manager",
+                "core.universal_agent_runtime", 
+                "core.runtime.runtime_integration",
                 "tools.base_tool",
                 "api.main"
             ]

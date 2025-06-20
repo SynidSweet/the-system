@@ -7,8 +7,7 @@ from tools.core_mcp.core_tools import (
     RequestContextTool,
     RequestToolsTool,
     EndTaskTool,
-    FlagForReviewTool,
-    ThinkOutLoudTool
+    FlagForReviewTool
 )
 from tools.system_tools.internal_tools import (
     ListAgentsTool,
@@ -29,7 +28,6 @@ def initialize_tools():
     tool_registry.register_tool(RequestToolsTool(), "core")
     tool_registry.register_tool(EndTaskTool(), "core")
     tool_registry.register_tool(FlagForReviewTool(), "core")
-    tool_registry.register_tool(ThinkOutLoudTool(), "core")
     
     # Register internal system tools
     tool_registry.register_tool(ListAgentsTool(), "system")

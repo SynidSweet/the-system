@@ -24,11 +24,15 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import uvicorn
 import json
+from typing import Optional
 
-from core.models import TaskSubmission, TaskResponse
-from core.task_manager import task_manager
+from core.models import TaskSubmission, TaskResponse, TaskStatus
 from core.database_manager import database
 from core.websocket_messages import WebSocketMessage, MessageType
+from core.event_integration import event_integration
+from core.entities.entity_manager import EntityManager
+from core.runtime.runtime_integration import initialize_runtime_integration, get_runtime_integration, RuntimeIntegration
+from core.runtime.state_machine import TaskState
 from config.settings import settings
 
 
@@ -40,12 +44,49 @@ async def lifespan(app: FastAPI):
     # Initialize database
     await database.initialize()
     
-    # Initialize and register tools
+    # Initialize event system integration
+    await event_integration.initialize()
+    
+    # Initialize entity system (Phase 3)
+    print("🔄 Initializing Entity Management Layer...")
+    from core.entities.entity_manager import EntityManager
+    entity_manager = EntityManager()
+    await entity_manager.initialize()
+    print("✅ Entity system initialized")
+    
+    # Initialize runtime system (Phase 4)
+    print("🔄 Initializing Process Framework & Runtime Engine...")
+    global runtime_integration
+    runtime_integration = await initialize_runtime_integration(
+        event_manager=event_integration.event_manager,
+        entity_manager=entity_manager,
+        mode="runtime_first"  # Force runtime-only mode
+    )
+    print("✅ Runtime engine initialized with process framework (runtime-only mode)")
+    
+    # Initialize tool system (Phase 5)
+    print("🔄 Initializing Optional Tooling System...")
+    from tools.mcp_servers.startup import initialize_tool_system
+    global tool_system_manager
+    tool_system_manager = await initialize_tool_system(
+        db_manager=database,
+        entity_manager=entity_manager,
+        config={
+            "allowed_file_paths": ["/code/personal/the-system"],
+            "github": {},
+            "user_interface": {}
+        }
+    )
+    print("✅ Tool system initialized with MCP servers")
+    
+    # Initialize and register legacy tools
     from tools import initialize_tools
     initialize_tools()
     
-    # Start task manager
-    await task_manager.start()
+    # Self-improvement engine removed in Phase 8 cleanup
+    # Functionality integrated into entity framework and event system
+    
+    # No need to start old task manager - runtime engine handles everything
     
     print("✅ Agent System API is ready!")
     
@@ -53,9 +94,26 @@ async def lifespan(app: FastAPI):
     
     # Cleanup
     print("🛑 Shutting down Agent System API...")
-    await task_manager.stop()
+    
+    # Shutdown tool system
+    if tool_system_manager:
+        from tools.mcp_servers.startup import shutdown_tool_system
+        await shutdown_tool_system()
+    
+    # Shutdown runtime
+    if runtime_integration:
+        await runtime_integration.shutdown()
+    
+    await event_integration.shutdown()
     await database.close()
     print("✅ Shutdown complete")
+
+
+# Global runtime integration instance
+runtime_integration: Optional[RuntimeIntegration] = None
+
+# Global tool system manager
+tool_system_manager = None
 
 
 # Create FastAPI app
@@ -79,6 +137,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Improvement dashboard removed in Phase 8 cleanup
+# Self-improvement now integrated into entity framework
 
 
 # WebSocket connection manager
@@ -117,8 +178,8 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-# Make manager accessible to other modules
-task_manager.websocket_manager = manager
+# Websocket manager is now global
+# (Previously was: task_manager.websocket_manager = manager)
 
 
 # API Routes
@@ -161,16 +222,36 @@ async def health_check():
 async def submit_task(submission: TaskSubmission):
     """Submit a new task for execution"""
     try:
-        response = await task_manager.submit_task(submission)
+        if not runtime_integration:
+            raise RuntimeError("Runtime integration not initialized")
+        
+        # Create task using the runtime engine
+        task_id = await runtime_integration.create_task(
+            instruction=submission.instruction,
+            parent_task_id=None,
+            agent_type=submission.agent_type,
+            priority=submission.priority,
+            max_execution_time=submission.max_execution_time
+        )
+        
+        # Get task details for response
+        task = await database.tasks.get_by_id(task_id)
+        if not task:
+            raise RuntimeError(f"Task {task_id} not found after creation")
         
         # Broadcast task creation to WebSocket clients
         await manager.broadcast(json.dumps({
             "type": "task_created",
-            "task_id": response.task_id,
-            "tree_id": response.tree_id
+            "task_id": task_id,
+            "tree_id": task.tree_id
         }))
         
-        return response
+        return TaskResponse(
+            task_id=task_id,
+            tree_id=task.tree_id,
+            status=task.status,
+            created_at=task.created_at
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -179,8 +260,22 @@ async def submit_task(submission: TaskSubmission):
 async def get_active_tasks():
     """Get all active task trees"""
     try:
-        trees = await task_manager.get_active_trees()
-        return {"active_trees": trees}
+        # Get active tasks from database directly
+        active_tasks = await database.tasks.get_active_tasks()
+        
+        # Group by tree_id
+        trees = {}
+        for task in active_tasks:
+            if task.tree_id not in trees:
+                trees[task.tree_id] = {
+                    "tree_id": task.tree_id,
+                    "tasks": [],
+                    "started_at": task.created_at,
+                    "status": "active"
+                }
+            trees[task.tree_id]["tasks"].append(task.model_dump())
+        
+        return {"active_trees": list(trees.values())}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -189,9 +284,25 @@ async def get_active_tasks():
 async def get_all_task_trees():
     """Get all task trees including completed ones"""
     try:
-        # Use task_manager to get all trees with full structure
-        all_trees = await task_manager.get_all_trees()
-        return {"all_trees": all_trees}
+        # Get all root tasks (tasks with no parent)
+        all_tasks = await database.tasks.get_all_root_tasks()
+        
+        # For each root task, get the full tree
+        trees = []
+        for root_task in all_tasks:
+            # Get all tasks in this tree
+            tree_tasks = await database.tasks.get_by_tree_id(root_task.tree_id)
+            
+            # Build tree structure
+            tree = {
+                "tree_id": root_task.tree_id,
+                "tasks": [task.model_dump() for task in tree_tasks],
+                "started_at": root_task.created_at.isoformat() if root_task.created_at else None,
+                "status": root_task.status.value if hasattr(root_task.status, 'value') else root_task.status
+            }
+            trees.append(tree)
+        
+        return {"all_trees": trees}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -200,8 +311,23 @@ async def get_all_task_trees():
 async def get_task_tree(tree_id: int):
     """Get all tasks in a tree with hierarchical structure"""
     try:
-        tree = await task_manager.get_task_tree(tree_id)
-        return {"tree_id": tree_id, "tasks": tree}
+        tasks = await database.tasks.get_by_tree_id(tree_id)
+        
+        # Build hierarchical structure
+        task_dict = {task.id: task.model_dump() for task in tasks}
+        
+        # Add children to each task
+        for task in tasks:
+            task_dict[task.id]["children"] = []
+        
+        for task in tasks:
+            if task.parent_task_id and task.parent_task_id in task_dict:
+                task_dict[task.parent_task_id]["children"].append(task_dict[task.id])
+        
+        # Return root tasks (no parent)
+        root_tasks = [task_dict[task.id] for task in tasks if not task.parent_task_id]
+        
+        return {"tree_id": tree_id, "tasks": root_tasks}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -288,17 +414,61 @@ async def get_tree_messages(tree_id: int):
 @app.get("/tasks/{task_id}")
 async def get_task_status(task_id: int):
     """Get detailed status of a specific task"""
-    task_status = await task_manager.get_task_status(task_id)
-    if not task_status:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return task_status
+    try:
+        task = await database.tasks.get_by_id(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        # Get task tree info
+        tree_tasks = await database.tasks.get_by_tree_id(task.tree_id)
+        
+        # Get recent messages
+        messages = await database.messages.get_by_task_id(task_id)
+        recent_messages = messages[-5:] if messages else []
+        
+        # Get runtime status if available
+        runtime_active = False
+        if runtime_integration and runtime_integration.runtime_engine:
+            runtime_active = task_id in runtime_integration.runtime_engine.active_agents
+        
+        return {
+            "task": task.model_dump(),
+            "tree_info": {
+                "tree_id": task.tree_id,
+                "total_tasks": len(tree_tasks),
+                "completed_tasks": len([t for t in tree_tasks if t.status == TaskStatus.COMPLETE]),
+                "failed_tasks": len([t for t in tree_tasks if t.status == TaskStatus.FAILED]),
+                "active_tasks": len([t for t in tree_tasks if t.status in [TaskStatus.RUNNING, TaskStatus.QUEUED]])
+            },
+            "recent_messages": [msg.model_dump() for msg in recent_messages],
+            "is_running": runtime_active
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.delete("/tasks/tree/{tree_id}")
 async def cancel_task_tree(tree_id: int):
     """Cancel all tasks in a tree"""
     try:
-        await task_manager.cancel_tree(tree_id)
+        # Get all tasks in the tree
+        tree_tasks = await database.tasks.get_by_tree_id(tree_id)
+        
+        # Cancel each task
+        for task in tree_tasks:
+            if task.status in [TaskStatus.QUEUED, TaskStatus.RUNNING]:
+                await database.tasks.update_status(task.id, TaskStatus.CANCELLED)
+                
+                # Also update runtime state if available
+                if runtime_integration and runtime_integration.runtime_engine:
+                    await runtime_integration.runtime_engine.update_task_state(
+                        task.id,
+                        TaskState.FAILED,
+                        {"reason": "Tree cancelled"}
+                    )
+        
         await manager.broadcast(f"tree_cancelled:{tree_id}")
         return {"message": f"Task tree {tree_id} cancelled"}
     except Exception as e:
@@ -498,18 +668,38 @@ async def update_document(doc_name: str, doc_update: dict):
 async def get_system_stats():
     """Get system statistics"""
     try:
-        task_stats = task_manager.get_stats()
-        
         # Get database stats
         active_tasks = await database.tasks.get_active_tasks()
         recent_messages = await database.messages.get_recent_messages(50)
+        
+        # Get entity system stats
+        entity_stats = {
+            "entity_manager_active": True,
+            "entities_cached": 0  # Could get from entity manager if needed
+        }
+        
+        # Get runtime system stats
+        runtime_stats = {}
+        runtime_integration_local = get_runtime_integration()
+        if runtime_integration_local:
+            runtime_stats = await runtime_integration_local.get_runtime_statistics()
+        
+        # Calculate task stats from runtime
+        task_stats = {
+            "running_agents": len(runtime_integration_local.runtime_engine.active_agents) if runtime_integration_local and runtime_integration_local.runtime_engine else 0,
+            "queued_tasks": len([t for t in active_tasks if t.status == TaskStatus.QUEUED]),
+            "max_concurrent_agents": runtime_integration_local.runtime_engine.settings.max_concurrent_agents if runtime_integration_local and runtime_integration_local.runtime_engine else 5,
+            "is_running": runtime_integration_local is not None and runtime_integration_local.runtime_engine is not None
+        }
         
         return {
             "task_manager": task_stats,
             "database": {
                 "active_tasks": len(active_tasks),
                 "recent_messages": len(recent_messages)
-            }
+            },
+            "entity_system": entity_stats,
+            "runtime_system": runtime_stats
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -570,10 +760,19 @@ class StepCommand(BaseModel):
 @app.get("/system/config")
 async def get_system_config():
     """Get current system configuration"""
+    max_concurrent = 5
+    step_mode = False
+    step_mode_threads = []
+    
+    if runtime_integration and runtime_integration.runtime_engine:
+        max_concurrent = runtime_integration.runtime_engine.settings.max_concurrent_agents
+        step_mode = runtime_integration.runtime_engine.settings.manual_stepping_enabled
+        step_mode_threads = getattr(runtime_integration.runtime_engine.settings, "step_mode_threads", [])
+    
     return {
-        "max_parallel_tasks": task_manager.max_concurrent_agents,
-        "step_mode": getattr(task_manager, "step_mode_enabled", False),
-        "step_mode_threads": getattr(task_manager, "step_mode_threads", [])
+        "max_parallel_tasks": max_concurrent,
+        "step_mode": step_mode,
+        "step_mode_threads": step_mode_threads
     }
 
 
@@ -581,9 +780,10 @@ async def get_system_config():
 async def update_system_config(config: SystemConfig):
     """Update system configuration"""
     try:
-        task_manager.max_concurrent_agents = config.max_parallel_tasks
-        task_manager.step_mode_enabled = config.step_mode
-        task_manager.step_mode_threads = config.step_mode_threads
+        if runtime_integration and runtime_integration.runtime_engine:
+            runtime_integration.runtime_engine.settings.max_concurrent_agents = config.max_parallel_tasks
+            runtime_integration.runtime_engine.settings.manual_stepping_enabled = config.step_mode
+            setattr(runtime_integration.runtime_engine.settings, "step_mode_threads", config.step_mode_threads)
         
         # Broadcast configuration change
         await manager.broadcast(json.dumps({
@@ -600,12 +800,29 @@ async def update_system_config(config: SystemConfig):
 async def handle_step_command(command: StepCommand):
     """Handle step mode commands"""
     try:
+        if not runtime_integration or not runtime_integration.runtime_engine:
+            raise RuntimeError("Runtime engine not available")
+        
         if command.action == "continue":
-            await task_manager.continue_step(command.task_id)
+            # Continue task execution (release from manual hold)
+            await runtime_integration.runtime_engine.update_task_state(
+                command.task_id,
+                TaskState.READY_FOR_AGENT
+            )
         elif command.action == "skip":
-            await task_manager.skip_step(command.task_id)
+            # Skip task (mark as completed)
+            await runtime_integration.runtime_engine.update_task_state(
+                command.task_id,
+                TaskState.COMPLETED,
+                {"skipped": True}
+            )
         elif command.action == "abort":
-            await task_manager.abort_task(command.task_id)
+            # Abort task (mark as failed)
+            await runtime_integration.runtime_engine.update_task_state(
+                command.task_id,
+                TaskState.FAILED,
+                {"aborted": True}
+            )
         else:
             raise ValueError(f"Unknown step action: {command.action}")
         
@@ -641,8 +858,11 @@ async def websocket_endpoint(websocket: WebSocket):
                 command = json.loads(data)
                 if command.get("type") == "continue_step":
                     task_id = command.get("task_id")
-                    if task_id:
-                        await task_manager.continue_step(task_id)
+                    if task_id and runtime_integration and runtime_integration.runtime_engine:
+                        await runtime_integration.runtime_engine.update_task_state(
+                            task_id,
+                            TaskState.READY_FOR_AGENT
+                        )
                         await manager.send_personal_message(
                             json.dumps({"type": "step_continued", "task_id": task_id}),
                             websocket
