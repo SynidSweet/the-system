@@ -23,6 +23,7 @@ from .events.event_manager import EventManager
 from .events.event_types import EventType, EntityType, EventOutcome
 from tools.base_tool import tool_registry
 from config.settings import settings
+from config.model_config import AGENT_MODEL_PREFERENCES, ModelSelector
 
 
 class UniversalAgentRuntime:

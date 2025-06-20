@@ -45,7 +45,7 @@ See the [Migration Completion Guide](../docs/migration_completion_guide.md) for 
 
 ### Prerequisites
 - Python 3.11+
-- API key for Google Gemini (default), Anthropic Claude, or OpenAI GPT
+- API key for Google Gemini 2.5 series (default), Anthropic Claude, or OpenAI GPT
 - Node.js (for React frontend)
 
 ### 1. Setup
