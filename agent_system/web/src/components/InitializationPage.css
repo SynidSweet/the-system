@@ -1,0 +1,262 @@
+.initialization-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.init-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.init-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px;
+  text-align: center;
+}
+
+.init-header h1 {
+  margin: 0;
+  font-size: 2.5em;
+  font-weight: 700;
+}
+
+.tagline {
+  margin: 10px 0 0 0;
+  font-size: 1.2em;
+  opacity: 0.9;
+}
+
+.init-content {
+  padding: 40px;
+}
+
+.welcome-section {
+  margin-bottom: 40px;
+}
+
+.welcome-section h2 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.welcome-section p {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.welcome-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.welcome-section li {
+  padding: 8px 0;
+  padding-left: 25px;
+  position: relative;
+  color: #555;
+}
+
+.welcome-section li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.settings-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 25px;
+  margin-bottom: 40px;
+}
+
+.settings-section h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.setting-group {
+  margin-bottom: 20px;
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
+}
+
+.setting-group label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.setting-group input[type="checkbox"] {
+  margin-right: 10px;
+  margin-top: 3px;
+}
+
+.setting-label {
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.setting-description {
+  color: #666;
+  font-size: 0.9em;
+  display: block;
+  margin-left: 25px;
+}
+
+.number-input {
+  width: 60px;
+  padding: 5px 10px;
+  margin: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.phases-section {
+  margin-bottom: 40px;
+}
+
+.phases-section h3 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.phases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.phase {
+  display: flex;
+  align-items: flex-start;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+
+.phase:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.phase-number {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.phase-info h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1em;
+}
+
+.phase-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.warning-section {
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.warning-icon {
+  font-size: 1.5em;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.warning-content p {
+  margin: 0 0 10px 0;
+  color: #856404;
+}
+
+.warning-content p:last-child {
+  margin-bottom: 0;
+}
+
+.initialize-button {
+  width: 100%;
+  padding: 15px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.2em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.initialize-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.initialize-button:active {
+  transform: translateY(0);
+}
+
+.init-footer {
+  text-align: center;
+  padding: 20px 40px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.init-footer p {
+  margin: 0;
+  color: #666;
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .init-header {
+    padding: 30px 20px;
+  }
+  
+  .init-header h1 {
+    font-size: 2em;
+  }
+  
+  .init-content {
+    padding: 20px;
+  }
+  
+  .phases-grid {
+    grid-template-columns: 1fr;
+  }
+}

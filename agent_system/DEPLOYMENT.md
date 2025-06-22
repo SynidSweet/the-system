@@ -175,7 +175,7 @@ sudo systemctl restart agent-system
 The production UI includes:
 
 - **📋 Tasks Tab**: Real-time task monitoring and management
-- **🤖 Agents Tab**: View all 9 available agents and their capabilities
+- **🤖 Agents Tab**: View all 8 available agents and their capabilities
 - **⚙️ System Tab**: System health monitoring and status
 - **🔌 Real-time Updates**: WebSocket integration for live updates
 - **📱 Mobile Responsive**: Works on all devices
@@ -184,7 +184,7 @@ The production UI includes:
 ## 🎯 Complete Foundation
 
 The system includes:
-- ✅ **9 Specialized Agents** with detailed instructions
+- ✅ **8 Specialized Agents** with detailed instructions
 - ✅ **Full Context Documentation** (20+ documents)
 - ✅ **Complete MCP Toolkit** (7 core + 6 system tools)
 - ✅ **Advanced Database Schema** (5 tables)

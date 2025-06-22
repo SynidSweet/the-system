@@ -2,42 +2,51 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Philosophy: Complete Foundation for Self-Improvement
+## Project Philosophy: Process-First Architecture for Systematic Self-Improvement
 
-This is a **self-improving recursive agent system** with a **complete foundation** as specified in the launch plan. The system includes all 8 core agents, full context documentation, and comprehensive tooling to enable unlimited self-improvement.
+This is a **process-first recursive agent system** where systematic structure establishment precedes all task execution. The system transforms undefined problems into systematic domains with rules, regulations, and isolated puzzle pieces that can be solved independently with proper context.
 
-## Core Principle: Complete Foundation, Unlimited Growth
+## Core Principle: Process-First, Never Task-First
+
+The system operates on the principle that **every task requires systematic structural analysis before execution**:
+
+1. **Process Discovery First**: Every incoming task triggers comprehensive process framework analysis
+2. **Structure Establishment**: Missing processes, rules, and systematic frameworks are created before task breakdown
+3. **Isolated Task Success**: All subtasks become puzzle pieces that succeed independently within established frameworks
+4. **No Ad-Hoc Solutions**: Elimination of improvised approaches in favor of systematic process-driven execution
 
 The foundation has been **fully implemented** and includes:
 
-1. Universal Agent Runtime (executes any task configuration)
-2. Complete Agent Suite (8 specialized agents with detailed instructions)
-3. Full Context Documentation (system docs + process guides) 
-4. Comprehensive Database Schema (agents, tasks, messages, context, tools)
-5. Core MCP Toolkit (6 essential tools for recursion)
-6. Advanced Toolset (internal + external integrations)
-7. Web Interface + API (real-time updates, task visualization)
+1. Universal Agent Runtime (executes tasks within systematic frameworks)
+2. Complete Agent Suite (9 specialized agents including process_discovery)
+3. Process-First Architecture (systematic framework establishment before execution)
+4. Comprehensive Database Schema (agents, tasks, processes, tools, documents, events)
+5. Core MCP Toolkit (6 essential tools for systematic execution)
+6. Advanced Toolset (internal + external integrations with process boundaries)
+7. Web Interface + API (real-time updates, process visualization)
 
-**Agents now build advanced capabilities on top of this complete foundation.**
+**All development must follow process-first principles - establish systematic frameworks before execution.**
 
-## Complete Foundation Components (FULLY IMPLEMENTED)
+## Process-First Foundation Components (FULLY IMPLEMENTED)
 
-### 1. Universal Agent Runtime
-- Single agent class that executes any task configuration
-- AI model integration (Anthropic/OpenAI)  
-- Tool execution and message logging
-- Permission and constraint enforcement
+### 1. Process-First Universal Agent Runtime
+- Single agent class that executes tasks within systematic frameworks
+- Process discovery and establishment before execution
+- AI model integration with framework boundaries
+- Tool execution within process-defined limits
+- Systematic message logging for process optimization
 
-### 2. Complete Agent Suite (8 Agents)
-All agents implemented with detailed instructions:
-- `agent_selector` - Task routing and agent selection
-- `task_breakdown` - Complex problem decomposition
-- `context_addition` - Knowledge and context management
-- `tool_addition` - Capability expansion and tool development
-- `task_evaluator` - Quality assessment and validation
-- `documentation_agent` - System documentation and knowledge capture
-- `summary_agent` - Information synthesis and reporting
-- `review_agent` - System improvement and optimization
+### 2. Complete Process-First Agent Suite (9 Agents)
+All agents operate with process-first principles:
+- `process_discovery` - **PRIMARY AGENT** - Establishes systematic frameworks before execution
+- `agent_selector` - Framework-aware task routing and agent selection
+- `planning_agent` - Process-driven task decomposition for isolated success
+- `context_addition` - Framework-appropriate knowledge management
+- `tool_addition` - Process-compliant capability expansion
+- `task_evaluator` - Framework-aware quality assessment
+- `documentation_agent` - Systematic process documentation
+- `summary_agent` - Process-contextualized synthesis
+- `review_agent` - Systematic framework optimization
 
 ### 3. Full Database Schema
 ```sql
@@ -79,87 +88,135 @@ Complete knowledge base including:
 - Complete FastAPI server with full documentation
 - React frontend with modern UI components
 
-## What Agents Should Build Next
+### 8. MVP Knowledge System (NEW)
+- **File-Based Knowledge Storage**: JSON entities organized by type (domains, processes, agents, tools, patterns, system)
+- **Context Assembly Engine**: Assembles complete context packages for isolated task success
+- **Knowledge Gap Detection**: Identifies missing knowledge preventing task completion
+- **Bootstrap Conversion**: Converts existing documentation to structured knowledge entities
+- **Usage-Driven Evolution**: Knowledge effectiveness tracked and improved through usage
+- **Simple Migration Path**: Designed to evolve into graph database when needed
 
-With the complete foundation in place, submit these **advanced** tasks:
+## Process-First Development Approach
 
-1. **Performance Analytics Dashboard** - Real-time monitoring and optimization insights
-2. **Advanced Testing Framework** - Automated quality gates and regression testing
-3. **Machine Learning Integration** - Pattern recognition and predictive capabilities
-4. **Advanced UI Components** - Sophisticated visualization and interaction tools
-5. **Security Monitoring** - Advanced safety and threat detection systems
-6. **Deployment Automation** - CI/CD pipelines and infrastructure management
-7. **Self-Healing Mechanisms** - Advanced error recovery and system resilience
-8. **External Service Integration** - APIs, databases, and third-party tools
+When working with this system, ALWAYS follow the process-first approach:
+
+1. **Never Start with Task Execution** - Always verify systematic frameworks exist first
+2. **Request Process Establishment** - If frameworks are missing, create them before proceeding
+3. **Work Within Frameworks** - All execution must happen within established systematic boundaries
+4. **Enable Isolated Success** - Ensure every subtask can succeed independently with proper context
+
+## What to Build Next with Process-First Architecture
+
+With the process-first foundation and knowledge system in place, submit tasks that leverage systematic frameworks:
+
+1. **Knowledge-Driven Development** - Use knowledge system to provide complete context for all tasks
+2. **Systematic Framework Library** - Build comprehensive process frameworks through task execution
+3. **Knowledge Evolution Pipeline** - Automatically create knowledge from successful executions
+4. **Context Completeness Validation** - Ensure all tasks have sufficient context for isolated success
+5. **Knowledge Graph Migration** - Evolve from file-based to graph database when complexity requires
+6. **Pattern Recognition Engine** - Extract successful patterns into reusable knowledge entities
+7. **Automated Gap Resolution** - System identifies and fills its own knowledge gaps
+8. **Framework Effectiveness Tracking** - Monitor and optimize process frameworks through usage
 
 ## Current System Status
 
-**Complete Foundation Deployed:**
-- ✅ Universal agent runtime with all capabilities
-- ✅ All 8 specialized agents with detailed instructions
-- ✅ Full context documentation and knowledge base
-- ✅ Comprehensive database schema and models
-- ✅ Complete MCP toolkit and integrations
-- ✅ Advanced internal and external tools
-- ✅ Web interface with real-time updates
-- ✅ System initialization and health checks
+**Process-First Foundation Deployed:**
+- ✅ Process-first universal agent runtime
+- ✅ Process discovery agent for systematic framework establishment
+- ✅ All 9 specialized agents with process-first principles
+- ✅ Systematic neutral task process with framework validation
+- ✅ Domain analysis and framework establishment processes
+- ✅ Complete entity-based architecture (6 entity types)
+- ✅ Process-driven MCP toolkit and integrations
+- ✅ Web interface with process visualization
+- ✅ Systematic initialization with framework checks
+- ✅ MVP Knowledge System for context assembly and gap detection
 
-**System Ready For Advanced Tasks:**
-The foundation is complete and operational. All basic capabilities exist. The system can now tackle sophisticated, advanced challenges that build upon this foundation.
+**System Ready For Process-First Development:**
+The process-first foundation is operational. Every task now goes through systematic framework establishment before execution, ensuring isolated subtask success and comprehensive domain coverage.
 
 ## Key Implementation Guidelines
 
-### Foundation-Based Development
-The system now has a complete foundation. When agents build new capabilities:
-- Build on existing agents and tools
-- Leverage the full context documentation
-- Use existing quality standards and processes
-- Integrate with the comprehensive monitoring system
+### Process-First Development
+The system operates on systematic framework establishment. When building capabilities:
+- ALWAYS establish process frameworks before execution
+- Verify systematic structure completeness
+- Ensure isolated subtask success capability
+- Work within established process boundaries
+- Never use ad-hoc approaches
 
-### Database-Driven Architecture
-All behavior comes from the database:
-- Agents can create new agent types
-- Tools can be dynamically added
-- Context can be expanded
-- Quality standards can evolve
+### Entity-Based Process Architecture
+All behavior driven by 6 entity types:
+- **Processes** - Primary organizing principle for systematic frameworks
+- **Agents** - Execute within process boundaries
+- **Tasks** - Work units that succeed in isolation
+- **Tools** - Capabilities within process limits
+- **Documents** - Systematic context and knowledge
+- **Events** - Enable process optimization
 
-### Collaborative Agent Ecosystem
-The 8 agents work together:
-1. `agent_selector` routes tasks to specialists
-2. `task_breakdown` decomposes complex problems
-3. Specialist agents handle specific domains
-4. `task_evaluator` ensures quality
-5. `documentation_agent` captures knowledge
-6. `summary_agent` synthesizes results
-7. `review_agent` implements improvements
+### Process-First Agent Collaboration
+The 9 agents collaborate systematically:
+1. `process_discovery` establishes frameworks (ALWAYS FIRST)
+2. `agent_selector` routes within frameworks
+3. `planning_agent` decomposes using process patterns
+4. Specialist agents execute within boundaries
+5. `task_evaluator` validates framework compliance
+6. `documentation_agent` captures systematic patterns
+7. `review_agent` optimizes frameworks
 
-## Development Workflow
+## Process-First Development Workflow
 
-1. **Submit advanced tasks** to leverage the complete foundation
-2. **Agents collaborate** using established patterns and tools
-3. **System improves** through the review_agent and established processes
-4. **Knowledge accumulates** in the comprehensive documentation system
-5. **Capabilities expand** while maintaining quality and safety standards
+1. **Submit task** → Process discovery analyzes domain requirements
+2. **Knowledge assembly** → Context engine provides complete knowledge for task
+3. **Framework establishment** → Missing systematic structures created
+4. **Systematic breakdown** → Tasks decomposed using process patterns
+5. **Isolated execution** → Subtasks succeed independently with full context
+6. **Knowledge evolution** → New patterns captured as knowledge entities
+7. **Process optimization** → Frameworks improve through usage analysis
 
 ## Architecture Highlights
 
-- **Complete Foundation**: All 8 agents with specialized capabilities
-- **Universal Agent Design**: One runtime, infinite configurations
-- **Full Documentation**: Comprehensive knowledge base and processes
-- **Advanced Tooling**: Internal and external integrations
-- **Quality Systems**: Evaluation, monitoring, and improvement processes
-- **Database-Driven**: Everything configurable, nothing hardcoded
-- **Self-Improving**: Continuous enhancement through agent collaboration
+- **Process-First Foundation**: Systematic framework establishment before execution
+- **9 Specialized Agents**: Including primary process_discovery agent
+- **Entity-Based Design**: 6 fundamental entity types supporting systematic operation
+- **Isolated Task Success**: Every subtask succeeds independently within frameworks
+- **Systematic Documentation**: Comprehensive process patterns and frameworks
+- **Framework-Driven Tools**: All capabilities operate within process boundaries
+- **Self-Optimizing**: Continuous framework improvement through usage analysis
 
 ## Success Criteria
 
-The complete foundation is operational when:
-1. ✅ All 8 agents are accessible and functional
-2. ✅ Complex tasks are automatically decomposed and distributed
-3. ✅ Agents collaborate effectively using the MCP toolkit
-4. ✅ Context and knowledge are accumulated and shared
-5. ✅ System continuously improves through established processes
-6. ✅ Quality standards are maintained and evolved
-7. ✅ All interactions are logged, monitored, and learned from
+The process-first foundation is operational when:
+1. ✅ Process discovery establishes frameworks before all execution
+2. ✅ Complex domains transformed into systematic frameworks
+3. ✅ Tasks decomposed for isolated success within boundaries
+4. ✅ Agents collaborate within established process frameworks
+5. ✅ System continuously optimizes systematic approaches
+6. ✅ Framework compliance maintained and validated
+7. ✅ All operations generate learning for process improvement
 
-**The complete foundation is ready - submit advanced tasks and watch unlimited growth!**
+**The process-first foundation transforms "how to solve" into "what framework enables systematic success"!**
+
+## Knowledge System Usage
+
+### Bootstrap Knowledge Base
+```bash
+# Convert existing documentation to knowledge entities
+python scripts/bootstrap_knowledge.py
+```
+
+### Using Knowledge in Development
+When implementing new features:
+1. **Check Knowledge Gaps**: System identifies what knowledge is missing
+2. **Assemble Context**: Context engine provides complete knowledge packages
+3. **Validate Completeness**: Ensure context enables isolated task success
+4. **Track Usage**: System learns from knowledge effectiveness
+5. **Evolve Knowledge**: Successful patterns become new knowledge entities
+
+### Knowledge System Architecture
+- **Storage**: `knowledge/` directory with JSON entities
+- **Engine**: `core/knowledge/` module for context assembly
+- **Tracking**: Database tables for usage, gaps, and evolution
+- **Bootstrap**: Converts docs → structured knowledge on first run
+
+The knowledge system ensures every task has the context needed for isolated success!

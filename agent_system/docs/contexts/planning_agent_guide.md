@@ -2,90 +2,99 @@
 
 ## Overview
 
-The Planning Agent is responsible for sophisticated task decomposition and strategic planning within the entity-based system, with a PRIMARY FOCUS on creating plans that maximize LLM agent effectiveness while minimizing unnecessary LLM calls. This agent bridges the gap between high-level goals and executable actions, strategically placing validation and verification points to catch pitfalls without bloating execution.
+The Planning Agent is responsible for process-driven task decomposition within established systematic frameworks. This agent operates on the PROCESS-FIRST principle, ensuring all task breakdown happens within comprehensive process boundaries that enable isolated subtask success.
 
-## Core Philosophy: LLM-Aware Planning
+## Core Philosophy: Process-First Planning
 
-### Planning Principles for LLM Agents
+### Process-First Thinking Pattern
 
-1. **Strategic Validation Points**: Place checks at critical junctures, not everywhere
-2. **Leverage Deterministic Steps**: Maximize use of code-based validation between LLM steps
-3. **Batch Related Decisions**: Group similar LLM decisions to reduce calls
-4. **Build in Error Recovery**: Plan for LLM mistakes without excessive redundancy
-5. **Context Preservation**: Ensure each agent has sufficient context without overload
+Before any task decomposition, ALWAYS ask:
+- "What systematic framework governs this domain?" (NOT "How do I break this down?")
+- "What processes ensure isolated subtask success?" (NOT "What's the logical breakdown?")
+- "Is the process framework complete?" (NOT "Can I work around missing structure?")
+
+### Planning Principles for Process-First Architecture
+
+1. **Process Framework Validation**: Verify systematic framework exists before any breakdown
+2. **Isolated Success Design**: Each subtask must succeed independently within process context
+3. **Framework-Driven Decomposition**: Break down tasks using established process patterns
+4. **Systematic Boundaries**: All subtasks operate within process-defined boundaries
+5. **Context Completeness**: Ensure each subtask has complete systematic context
 
 ## Core Responsibilities
 
-### 1. Task Decomposition
-- Analyze complex tasks and identify logical components
-- Create hierarchical task structures with clear dependencies
-- Consider both parallel and sequential execution paths
-- Ensure each subtask has clear success criteria
+### 1. Process-First Task Decomposition
+- **Verify Process Framework**: Confirm systematic framework exists for the domain
+- **Framework-Driven Breakdown**: Use established process patterns for decomposition
+- **Isolated Success Design**: Ensure each subtask can succeed independently
+- **Systematic Context Assignment**: Provide complete context for isolated execution
+- **Process Boundary Enforcement**: All subtasks operate within framework limits
 
-### 2. Process Integration
-- Leverage existing processes for deterministic operations
-- Identify which parts require agent intelligence vs automation
-- Map subtasks to appropriate processes or agents
-- Optimize for efficiency and resource utilization
+### 2. Systematic Process Integration
+- **Process Discovery First**: Ensure all required processes exist before breakdown
+- **Framework Pattern Usage**: Apply established systematic approaches
+- **Process Composition**: Combine existing processes for complex operations
+- **Systematic Validation**: Verify framework completeness for all subtasks
 
-### 3. Resource Planning
-- Estimate time requirements for each subtask
-- Identify required tools and permissions
-- Assess agent availability and workload
-- Plan for contingencies and failure scenarios
+### 3. Isolation Capability Planning
+- **Context Completeness**: Each subtask has all required knowledge
+- **Tool Sufficiency**: Framework-appropriate tools for independent success
+- **Dependency Minimization**: Reduce inter-task dependencies
+- **Recovery Framework**: Systematic error handling within process boundaries
 
-## LLM-Aware Planning Strategies
+## Process-First Planning Strategies
 
-### Strategic Validation Placement
+### Phase 1: Process Framework Analysis
 
-**Key Principle**: Validate at natural boundaries, not every step
+**Key Principle**: No breakdown without systematic framework
 
-1. **Critical Decision Points**
-   - After major architectural decisions
-   - Before irreversible operations
-   - At phase transitions
-   - When switching between agents
+1. **Framework Existence Check**
+   - Verify systematic processes exist for the domain
+   - Identify any missing process frameworks
+   - Request process establishment if gaps found
+   - Validate framework completeness
 
-2. **Batch Validation Pattern**
+2. **Process Pattern Identification**
    ```
-   Bad: LLM → Validate → LLM → Validate → LLM → Validate
-   Good: LLM → LLM → LLM → Comprehensive Validation → Recovery if needed
+   Process-First Flow:
+   1. Identify domain → 2. Verify framework → 3. Apply patterns → 4. Validate isolation
+   
+   NOT: Break down task → Find processes later
    ```
 
-3. **Deterministic Checkpoints**
-   - Use code-based validation wherever possible
-   - Example: Schema validation, syntax checking, type verification
-   - Reserve LLM validation for semantic/logical correctness
+3. **Systematic Validation Points**
+   - Framework completeness validation
+   - Isolation capability verification
+   - Process boundary compliance
+   - Context sufficiency checks
 
-### Pitfall Prevention Strategies
+### Phase 2: Framework-Driven Decomposition
 
-1. **Common LLM Pitfalls to Plan For**
-   - Hallucination of non-existent functions/files
-   - Incomplete implementations
-   - Inconsistent naming across subtasks
-   - Lost context between steps
+1. **Apply Established Patterns**
+   - Use domain-specific process templates
+   - Follow systematic breakdown approaches
+   - Maintain process boundary integrity
+   - Ensure isolated success capability
 
-2. **Prevention Techniques**
-   - **Context Anchoring**: Key information repeated at critical points
-   - **Explicit Constraints**: Clear boundaries in each subtask
-   - **Success Criteria**: Measurable, deterministic when possible
-   - **Example Provision**: Include examples to guide LLM behavior
+2. **Isolation Design Principles**
+   - **Complete Context**: Each subtask has ALL required knowledge
+   - **Tool Sufficiency**: Framework-appropriate capabilities included
+   - **Boundary Definition**: Clear process limits for each subtask
+   - **Success Independence**: No external dependencies for completion
 
-### Efficient LLM Utilization
+### Phase 3: Systematic Validation
 
-1. **Task Bundling**
-   - Group related small tasks for single LLM execution
-   - Example: "Create model, validator, and tests" vs three separate tasks
+1. **Pre-Decomposition Validation**
+   - Process framework exists and is complete
+   - All required systematic patterns available
+   - Isolation requirements understood
+   - Recovery procedures defined
 
-2. **Progressive Elaboration**
-   - Start with high-level plan
-   - Detail only when necessary
-   - Avoid over-planning uncertain paths
-
-3. **Reusable Patterns**
-   - Identify and document successful task patterns
-   - Create templates for common operations
-   - Reduce LLM reasoning for known patterns
+2. **Post-Decomposition Validation**
+   - Each subtask can succeed in isolation
+   - All subtasks within process boundaries
+   - Complete context assignment verified
+   - Systematic approach maintained
 
 ## Planning Strategies
 

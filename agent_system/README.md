@@ -1,21 +1,21 @@
-# Self-Improving Agent System - Entity-Based Architecture
+# Self-Improving Agent System - Process-First Architecture
 
-A **recursive agent system** with entity-based architecture that continuously evolves through automated self-improvement.
+A **process-first recursive agent system** where systematic framework establishment precedes all task execution, transforming undefined problems into systematic domains.
 
-## 🎯 Core Philosophy: Entity-Driven, Event-Sourced, Self-Improving
+## 🎯 Core Philosophy: Process-First, Entity-Based, Self-Improving
 
-This system has been fully migrated to an advanced entity-based architecture:
+This system implements comprehensive process-first architecture:
 
-1. **Entity Framework** - Unified polymorphic entity system
-2. **Event-Driven Architecture** - Comprehensive tracking and analysis
-3. **Process Framework** - Hybrid Python/LLM execution engine
-4. **Runtime Engine** - State machine with automatic progression
-5. **MCP Tool System** - Dynamic permission-based capabilities
-6. **13 Specialized Agents** - Original 8 + 5 new Phase 6 agents
-7. **Self-Improvement Engine** - Automated optimization with safety
-8. **Web Interface + API** - Real-time monitoring and control
+1. **Process-First Framework** - Systematic structure before execution
+2. **Entity-Based Design** - 6 fundamental types with processes primary
+3. **Event-Driven Learning** - Process optimization through analysis
+4. **Systematic Runtime** - Framework-aware state progression
+5. **Process-Bounded Tools** - Capabilities within framework limits
+6. **9 Specialized Agents** - Including primary process_discovery agent
+7. **Framework Evolution** - Systematic self-improvement
+8. **Web Interface + API** - Process visualization and control
 
-**Migration Complete: The system now features unlimited self-improvement capabilities.**
+**Process-First Architecture: Every task establishes frameworks for isolated success.**
 
 ## 🎉 Migration Complete!
 
@@ -99,31 +99,32 @@ cd web && npm start
   - **Documents Tab**: View and edit context documents
 - **API**: http://localhost:8000/docs
 
-## 🤖 What You Get (Complete Foundation)
+## 🤖 What You Get (Process-First Foundation)
 
-### Universal Agent Runtime
-- Single agent class that can execute any task configuration
-- AI model integration (Anthropic/OpenAI)
-- Tool execution and message logging
-- Permission and constraint enforcement
+### Process-First Universal Runtime
+- Framework establishment before any task execution
+- Systematic structure validation and creation
+- AI execution within process boundaries
+- Isolated task success through complete context
 
-### Core MCP Tools
-1. `break_down_task()` - Recursive problem decomposition
-2. `start_subtask()` - Spawn specialized agents
-3. `request_context()` - Knowledge expansion
-4. `request_tools()` - Capability discovery
-5. `end_task()` - Task completion
-6. `flag_for_review()` - Human oversight
+### Core Process-First Tools
+1. `break_down_task()` - Framework-driven decomposition
+2. `start_subtask()` - Spawn agents within frameworks
+3. `request_context()` - Framework-appropriate knowledge
+4. `request_tools()` - Process-compliant capabilities
+5. `end_task()` - Framework-validated completion
+6. `flag_for_review()` - Systematic oversight
 
-### Complete Agent Suite (8 Agents)
-- **agent_selector** - Task routing and agent selection
-- **task_breakdown** - Complex problem decomposition
-- **context_addition** - Knowledge and context management
-- **tool_addition** - Capability expansion and tool development
-- **task_evaluator** - Quality assessment and validation
-- **documentation_agent** - System documentation and knowledge capture
-- **summary_agent** - Information synthesis and reporting
-- **review_agent** - System improvement and optimization
+### Complete Process-First Agent Suite (9 Agents)
+- **process_discovery** - PRIMARY: Framework establishment
+- **agent_selector** - Framework-aware task routing
+- **planning_agent** - Process-driven decomposition
+- **context_addition** - Systematic context management
+- **tool_addition** - Framework-compliant capabilities
+- **task_evaluator** - Process compliance validation
+- **documentation_agent** - Framework documentation
+- **summary_agent** - Process-contextualized synthesis
+- **review_agent** - Framework optimization
 
 ### Full Context Documentation
 - System architecture and principles
@@ -192,9 +193,9 @@ python scripts/monitor_health.py --duration 300
 
 See `docs/self_improvement_guide.md` for complete procedures.
 
-## 🛠️ What Agents Should Build Next
+## 🛠️ Process-First Development Approach
 
-With the complete foundation in place, submit these advanced tasks:
+With the process-first foundation in place, follow systematic development:
 
 ```
 Build advanced performance monitoring and analytics dashboard

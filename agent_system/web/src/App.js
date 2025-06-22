@@ -6,6 +6,7 @@ import ControlPanel from './components/ControlPanel';
 import AgentBrowser from './components/AgentBrowser';
 import ToolBrowser from './components/ToolBrowser';
 import DocumentBrowser from './components/DocumentBrowser';
+import InitializationPage from './components/InitializationPage';
 
 // Get API base URL from environment or use production default
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
@@ -14,6 +15,7 @@ const WS_URL = process.env.REACT_APP_WS_URL ||
   (window.location.hostname === 'localhost' ? 'ws://localhost:8000/ws' : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.hostname}/api/ws`);
 
 function App() {
+  const [systemState, setSystemState] = useState('loading'); // 'loading', 'uninitialized', 'initializing', 'ready'
   const [currentView, setCurrentView] = useState('tasks'); // 'tasks', 'agents', 'tools', 'documents'
   const [threads, setThreads] = useState([]);
   const [selectedThread, setSelectedThread] = useState(null);
@@ -23,7 +25,9 @@ function App() {
   const [systemConfig, setSystemConfig] = useState({
     max_parallel_tasks: 3,
     step_mode: false,
-    step_mode_threads: []
+    step_mode_threads: [],
+    manual_step_mode: false,
+    max_concurrent_agents: 3
   });
   const [instruction, setInstruction] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,6 +35,9 @@ function App() {
   const wsRef = useRef(null);
 
   useEffect(() => {
+    // Check system initialization state first
+    checkSystemState();
+    
     // Connect to WebSocket for real-time updates
     if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
       connectWebSocket();
@@ -47,6 +54,45 @@ function App() {
       }
     };
   }, []);
+
+  const checkSystemState = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/system/state`);
+      const data = await response.json();
+      setSystemState(data.state);
+    } catch (error) {
+      console.error('Error checking system state:', error);
+      // Assume uninitialized if we can't check
+      setSystemState('uninitialized');
+    }
+  };
+
+  const handleInitialize = async (settings) => {
+    try {
+      // Update system config with initialization settings
+      await updateSystemConfig({
+        ...systemConfig,
+        manual_step_mode: settings.manualStepMode,
+        max_concurrent_agents: settings.maxConcurrentAgents,
+        step_mode: settings.manualStepMode,
+        step_mode_threads: ['*'] // Apply to all threads during init
+      });
+
+      // Start initialization
+      const response = await fetch(`${API_BASE_URL}/system/initialize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+
+      if (response.ok) {
+        setSystemState('initializing');
+        // The system will update state via WebSocket when complete
+      }
+    } catch (error) {
+      console.error('Error starting initialization:', error);
+    }
+  };
 
   const connectWebSocket = () => {
     // Prevent multiple connections
@@ -87,6 +133,14 @@ function App() {
 
   const handleWebSocketMessage = (message) => {
     switch (message.type) {
+      case 'system_state_change':
+        setSystemState(message.state);
+        if (message.state === 'ready') {
+          // Refresh data when system is ready
+          fetchThreads();
+          fetchSystemConfig();
+        }
+        break;
       case 'agent_started':
       case 'agent_thinking':
       case 'agent_tool_call':
@@ -218,6 +272,45 @@ function App() {
       submitTask(e);
     }
   };
+
+  // Show initialization page if system is not ready
+  if (systemState === 'uninitialized') {
+    return <InitializationPage onInitialize={handleInitialize} />;
+  }
+
+  // Show loading state
+  if (systemState === 'loading') {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Checking system state...</p>
+      </div>
+    );
+  }
+
+  // Show initializing state
+  if (systemState === 'initializing') {
+    return (
+      <div className="app">
+        <div className="app-header">
+          <h1>🤖 Agent System - Initializing</h1>
+        </div>
+        <div className="app-body">
+          <div className="initialization-progress">
+            <h2>System Initialization in Progress</h2>
+            <p>The system is executing initialization tasks. You can monitor progress below.</p>
+            <p>With manual step mode enabled, approve each agent execution in the Tasks view.</p>
+            <button 
+              className="view-tasks-button"
+              onClick={() => window.location.reload()}
+            >
+              View Task Progress
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">

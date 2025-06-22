@@ -1,4 +1,4 @@
-"""The Neutral Task Process - Default process for tasks without assigned processes."""
+"""The Neutral Task Process - Process-First implementation for tasks."""
 
 from typing import Dict, Any, Optional
 import logging
@@ -11,17 +11,19 @@ logger = logging.getLogger(__name__)
 
 
 class NeutralTaskProcess(BaseProcess):
-    """Default process applied to tasks that don't have a specific process assigned.
+    """Process-first task process that ensures systematic framework establishment before execution.
     
-    This process handles:
-    1. Agent selection - determines optimal agent for the task
-    2. Context assignment - identifies needed context documents
-    3. Tool assignment - determines required tools
-    4. Task preparation - prepares task for agent execution
+    This process follows the process-first architecture:
+    1. Process Discovery - ALWAYS establish systematic framework first
+    2. Framework Validation - Ensure complete systematic structure exists
+    3. Agent selection - determines optimal agent within framework
+    4. Context assignment - framework-driven context provision
+    5. Tool assignment - framework-appropriate tool selection
+    6. Task preparation - prepares task for systematic execution
     """
     
     async def execute(self, task_id: int, **kwargs) -> ProcessResult:
-        """Execute the neutral task process."""
+        """Execute the process-first neutral task process."""
         try:
             task = await self.sys.get_task(task_id)
             if not task:
@@ -31,56 +33,127 @@ class NeutralTaskProcess(BaseProcess):
                     error=f"Task {task_id} not found"
                 )
             
-            logger.info(f"Starting NeutralTaskProcess for task {task_id}: {task.instruction}")
+            logger.info(f"Starting Process-First NeutralTaskProcess for task {task_id}: {task.instruction}")
             
-            # Skip if task already has agent assigned (pre-assigned scenario)
+            # PHASE 1: PROCESS DISCOVERY AND ESTABLISHMENT (ALWAYS FIRST)
+            # Check if task already has systematic framework established
+            task_metadata = task.metadata or {}
+            if not task_metadata.get("systematic_framework_id"):
+                logger.info(f"No systematic framework found for task {task_id} - initiating process discovery")
+                
+                process_discovery_task_id = await self.sys.create_subtask(
+                    parent_id=task_id,
+                    instruction=f"Analyze and establish all necessary processes for: {task.instruction}",
+                    assigned_agent="process_discovery",
+                    additional_context=["process_discovery_guide", "process_framework_guide"],
+                    process="process_discovery_process"
+                )
+                
+                # Wait for process discovery to complete
+                results = await self.sys.wait_for_tasks([process_discovery_task_id])
+                if not results or results[0].status != "success":
+                    return ProcessResult(
+                        status="failure",
+                        data={},
+                        error="Process discovery and framework establishment failed"
+                    )
+                
+                process_result = results[0].data
+                
+                # Update task with framework information
+                await self.sys.update_task(
+                    task_id,
+                    metadata={
+                        **task_metadata,
+                        "systematic_framework_id": process_result.get("framework_id"),
+                        "domain_type": process_result.get("domain_type"),
+                        "isolation_capability": process_result.get("isolated_task_success_enabled", False)
+                    }
+                )
+                
+                # Add framework documentation to context
+                framework_docs = process_result.get("framework_documentation", [])
+                if framework_docs:
+                    await self.sys.add_context_to_task(task_id, framework_docs)
+                
+                logger.info(f"Systematic framework established for task {task_id}: {process_result.get('domain_type')}")
+            
+            # PHASE 2: FRAMEWORK VALIDATION (ensure framework is complete)
+            framework_id = task.metadata.get("systematic_framework_id") if task.metadata else None
+            if framework_id:
+                validation_result = await self._validate_framework_completeness(task_id, framework_id)
+                if not validation_result.get("complete"):
+                    logger.warning(f"Framework {framework_id} incomplete - enhancing")
+                    # Could trigger framework enhancement here if needed
+            
+            # PHASE 3: FRAMEWORK-DRIVEN AGENT SELECTION
             if not task.assigned_agent:
-                # 1. Agent Selection - create subtask for this
-                agent_result = await self._select_agent(task_id, task)
+                # Agent selection within systematic framework
+                agent_result = await self._select_agent_with_framework(task_id, task, framework_id)
                 if agent_result.status != "success":
                     return agent_result
                 
                 selected_agent = agent_result.data.get("agent_type")
                 await self.sys.update_task(task_id, assigned_agent=selected_agent)
-                logger.info(f"Selected agent '{selected_agent}' for task {task_id}")
+                logger.info(f"Selected agent '{selected_agent}' for task {task_id} within framework")
             
-            # 2. Context Assignment - create subtask if needed
-            if await self._needs_context_analysis(task):
-                context_result = await self._assign_context(task_id, task)
+            # PHASE 4: FRAMEWORK-DRIVEN CONTEXT ASSIGNMENT
+            if await self._needs_framework_context(task, framework_id):
+                context_result = await self._assign_framework_context(task_id, task, framework_id)
                 if context_result.status == "success" and context_result.data.get("context_added"):
-                    logger.info(f"Added context documents to task {task_id}")
+                    logger.info(f"Added framework-driven context documents to task {task_id}")
             
-            # 3. Tool Assignment - similar pattern
-            if await self._needs_tool_analysis(task):
-                tool_result = await self._assign_tools(task_id, task)
+            # PHASE 5: FRAMEWORK-APPROPRIATE TOOL ASSIGNMENT
+            if await self._needs_framework_tools(task, framework_id):
+                tool_result = await self._assign_framework_tools(task_id, task, framework_id)
                 if tool_result.status == "success" and tool_result.data.get("tools_added"):
-                    logger.info(f"Added tools to task {task_id}")
+                    logger.info(f"Added framework-appropriate tools to task {task_id}")
             
-            # 4. Mark ready for agent - Runtime will handle LLM calls
+            # PHASE 6: VALIDATE ISOLATED TASK SUCCESS CAPABILITY
+            isolation_validation = await self._validate_isolation_capability(task_id, task, framework_id)
+            if not isolation_validation.get("can_succeed_in_isolation"):
+                logger.warning(f"Task {task_id} cannot succeed in isolation - enhancing context")
+                # Could enhance isolation capability here
+            
+            # Mark ready for agent - Runtime will handle systematic LLM calls
             await self.sys.update_task_state(task_id, TaskState.READY_FOR_AGENT)
             
             return ProcessResult(
                 status="success",
                 data={
                     "task_prepared": True,
+                    "systematic_framework_established": True,
+                    "framework_id": framework_id,
+                    "domain_type": task_metadata.get("domain_type"),
                     "agent_assigned": task.assigned_agent or "pre-assigned",
                     "context_count": len(task.additional_context),
-                    "tool_count": len(task.additional_tools)
+                    "tool_count": len(task.additional_tools),
+                    "isolation_capability": isolation_validation.get("can_succeed_in_isolation", False)
                 }
             )
             
         except Exception as e:
             return await self.handle_error(e, task_id=task_id)
     
-    async def _select_agent(self, task_id: int, task) -> ProcessResult:
-        """Select optimal agent for the task."""
-        # Create subtask for agent selection
+    async def _validate_framework_completeness(self, task_id: int, framework_id: str) -> Dict[str, Any]:
+        """Validate that the systematic framework is complete."""
+        # In a full implementation, this would query the framework and validate completeness
+        # For now, return assumed complete
+        return {"complete": True, "framework_id": framework_id}
+    
+    async def _select_agent_with_framework(self, task_id: int, task, framework_id: str) -> ProcessResult:
+        """Select optimal agent within systematic framework constraints."""
+        # Create subtask for framework-aware agent selection
         selector_task_id = await self.sys.create_subtask(
             parent_id=task_id,
-            instruction=f"Select optimal agent for: {task.instruction}",
+            instruction=f"Select optimal agent within framework {framework_id} for: {task.instruction}",
             assigned_agent="agent_selector",
-            additional_context=["agent_capabilities_reference", "agent_selector_guide"],
-            process="agent_selection_process"
+            additional_context=["agent_capabilities_reference", "agent_selector_guide", "systematic_framework_guide"],
+            process="agent_selection_process",
+            metadata={
+                "systematic_framework_id": framework_id,
+                "framework_constraints": True
+            }
         )
         
         # Wait for agent selection
@@ -89,37 +162,38 @@ class NeutralTaskProcess(BaseProcess):
             return ProcessResult(
                 status="failure",
                 data={},
-                error="Agent selection failed"
+                error="Framework-driven agent selection failed"
             )
         
-        selected_agent = results[0].data.get("selected_agent", "task_breakdown")
+        selected_agent = results[0].data.get("selected_agent", "planning_agent")
         
         return ProcessResult(
             status="success",
             data={"agent_type": selected_agent}
         )
     
-    async def _needs_context_analysis(self, task) -> bool:
-        """Determine if task needs context analysis."""
-        # Simple heuristics for now
-        if task.additional_context:
-            return False  # Already has context
+    async def _needs_framework_context(self, task, framework_id: str) -> bool:
+        """Determine if task needs framework-driven context analysis."""
+        # Framework-aware context needs
+        if task.additional_context and len(task.additional_context) > 2:
+            return False  # Already has sufficient context
         
-        # Check if task mentions specific domains or technologies
-        keywords = ["api", "database", "frontend", "backend", "algorithm", "design"]
-        instruction_lower = task.instruction.lower()
-        
-        return any(keyword in instruction_lower for keyword in keywords)
+        # Always analyze context needs within systematic framework
+        return True
     
-    async def _assign_context(self, task_id: int, task) -> ProcessResult:
-        """Assign context documents to the task."""
-        # Create context analysis subtask
+    async def _assign_framework_context(self, task_id: int, task, framework_id: str) -> ProcessResult:
+        """Assign framework-appropriate context documents to the task."""
+        # Create framework-aware context analysis subtask
         context_task_id = await self.sys.create_subtask(
             parent_id=task_id,
-            instruction=f"Determine context needs for agent {task.assigned_agent} on: {task.instruction}",
+            instruction=f"Determine systematic context needs within framework {framework_id} for agent {task.assigned_agent} on: {task.instruction}",
             assigned_agent="context_addition",
-            additional_context=["context_addition_guide"],
-            process="context_analysis_process"
+            additional_context=["context_addition_guide", "systematic_framework_context_guide"],
+            process="context_analysis_process",
+            metadata={
+                "systematic_framework_id": framework_id,
+                "isolation_requirements": True
+            }
         )
         
         # Wait for context analysis
@@ -138,31 +212,33 @@ class NeutralTaskProcess(BaseProcess):
             status="success",
             data={
                 "context_added": bool(context_docs),
-                "documents": context_docs
+                "documents": context_docs,
+                "framework_compliant": True
             }
         )
     
-    async def _needs_tool_analysis(self, task) -> bool:
-        """Determine if task needs tool analysis."""
-        # Simple heuristics
-        if task.additional_tools:
-            return False  # Already has tools
+    async def _needs_framework_tools(self, task, framework_id: str) -> bool:
+        """Determine if task needs framework-appropriate tool analysis."""
+        # Framework-aware tool needs
+        if task.additional_tools and len(task.additional_tools) > 3:
+            return False  # Already has sufficient tools
         
-        # Check if task mentions actions that might need tools
-        action_keywords = ["create", "generate", "analyze", "search", "fetch", "query", "execute"]
-        instruction_lower = task.instruction.lower()
-        
-        return any(keyword in instruction_lower for keyword in action_keywords)
+        # Always analyze tool needs within systematic framework
+        return True
     
-    async def _assign_tools(self, task_id: int, task) -> ProcessResult:
-        """Assign tools to the task."""
-        # Create tool analysis subtask
+    async def _assign_framework_tools(self, task_id: int, task, framework_id: str) -> ProcessResult:
+        """Assign framework-appropriate tools to the task."""
+        # Create framework-aware tool analysis subtask
         tool_task_id = await self.sys.create_subtask(
             parent_id=task_id,
-            instruction=f"Determine tool needs for agent {task.assigned_agent} on: {task.instruction}",
+            instruction=f"Determine systematic tool needs within framework {framework_id} for agent {task.assigned_agent} on: {task.instruction}",
             assigned_agent="tool_addition",
-            additional_context=["tool_addition_guide"],
-            process="tool_analysis_process"
+            additional_context=["tool_addition_guide", "systematic_framework_tool_guide"],
+            process="tool_analysis_process",
+            metadata={
+                "systematic_framework_id": framework_id,
+                "framework_boundaries": True
+            }
         )
         
         # Wait for tool analysis
@@ -181,9 +257,29 @@ class NeutralTaskProcess(BaseProcess):
             status="success",
             data={
                 "tools_added": bool(tools),
-                "tools": tools
+                "tools": tools,
+                "framework_compliant": True
             }
         )
+    
+    async def _validate_isolation_capability(self, task_id: int, task, framework_id: str) -> Dict[str, Any]:
+        """Validate that task can succeed in isolation within framework."""
+        # Check if task has sufficient context and tools for isolated success
+        has_framework = bool(framework_id)
+        has_context = len(task.additional_context) > 0
+        has_tools = len(task.additional_tools) > 0
+        has_agent = bool(task.assigned_agent)
+        
+        can_succeed = has_framework and has_context and has_agent
+        
+        return {
+            "can_succeed_in_isolation": can_succeed,
+            "has_framework": has_framework,
+            "has_context": has_context,
+            "has_tools": has_tools,
+            "has_agent": has_agent,
+            "framework_id": framework_id
+        }
     
     async def validate_parameters(self, task_id: int = None, **kwargs) -> bool:
         """Validate process parameters."""

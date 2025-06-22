@@ -39,6 +39,7 @@ class ProcessRegistry:
         # Map of process names to their module paths
         default_processes = {
             "neutral_task": "agent_system.core.processes.neutral_task_process",
+            "system_initialization_process": "agent_system.core.processes.system_initialization_process",
             "break_down_task_process": "agent_system.core.processes.tool_processes.break_down_task",
             "create_subtask_process": "agent_system.core.processes.tool_processes.create_subtask",
             "end_task_process": "agent_system.core.processes.tool_processes.end_task",

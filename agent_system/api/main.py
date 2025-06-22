@@ -13,6 +13,7 @@ import asyncio
 import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
+import logging
 
 # Add the parent directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -34,6 +35,8 @@ from core.entities.entity_manager import EntityManager
 from core.runtime.runtime_integration import initialize_runtime_integration, get_runtime_integration, RuntimeIntegration
 from core.runtime.state_machine import TaskState
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -749,6 +752,8 @@ class SystemConfig(BaseModel):
     max_parallel_tasks: int = 3
     step_mode: bool = False
     step_mode_threads: list[int] = []  # Specific threads in step mode
+    manual_step_mode: bool = False  # Manual approval for each agent
+    max_concurrent_agents: int = 3
 
 class StepCommand(BaseModel):
     task_id: int
@@ -757,22 +762,134 @@ class StepCommand(BaseModel):
 
 # Configuration Endpoints
 
+@app.get("/system/state")
+async def get_system_state():
+    """Get current system initialization state"""
+    # Check if system has been initialized
+    try:
+        # Check if knowledge base exists
+        knowledge_dir = Path("knowledge")
+        has_knowledge = knowledge_dir.exists() and any(knowledge_dir.iterdir())
+        
+        # Check if core agents exist
+        agents = await database.agents.get_all_active()
+        has_agents = len(agents) >= 9  # We expect at least 9 core agents
+        
+        # Determine state
+        if not has_knowledge or not has_agents:
+            state = "uninitialized"
+        elif hasattr(app.state, "initializing") and app.state.initializing:
+            state = "initializing"
+        else:
+            state = "ready"
+        
+        return {
+            "state": state,
+            "has_knowledge": has_knowledge,
+            "agent_count": len(agents),
+            "expected_agents": 9
+        }
+    except Exception as e:
+        logger.error(f"Error checking system state: {e}")
+        return {"state": "uninitialized", "error": str(e)}
+
+
+@app.post("/system/initialize")
+async def initialize_system(settings: dict):
+    """Start system initialization with provided settings"""
+    try:
+        # Mark system as initializing
+        app.state.initializing = True
+        
+        # Broadcast state change
+        await manager.broadcast(json.dumps({
+            "type": "system_state_change",
+            "state": "initializing"
+        }))
+        
+        # Update system config with initialization settings
+        if runtime_integration and runtime_integration.runtime_engine:
+            runtime_integration.runtime_engine.settings.manual_stepping_enabled = settings.get("manualStepMode", True)
+            runtime_integration.runtime_engine.settings.max_concurrent_agents = settings.get("maxConcurrentAgents", 1)
+        
+        # Create initialization task with proper process
+        initialization_task_id = await runtime_integration.create_task(
+            instruction="Execute system initialization sequence including knowledge bootstrap and framework establishment",
+            parent_task_id=None,
+            agent_type="agent_selector",
+            priority=1,
+            process="system_initialization_process",
+            metadata={
+                "task_type": "system_initialization",
+                "phase": "complete",
+                "manual_mode": settings.get("manualStepMode", True),
+                "initialization_task": True
+            }
+        )
+        
+        logger.info(f"Started system initialization with task {initialization_task_id}")
+        
+        # The actual initialization will be handled by tasks
+        # Monitor completion via task status
+        asyncio.create_task(monitor_initialization_completion(initialization_task_id))
+        
+        return {
+            "message": "System initialization started",
+            "task_id": initialization_task_id,
+            "settings": settings
+        }
+    except Exception as e:
+        app.state.initializing = False
+        logger.error(f"Error starting initialization: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def monitor_initialization_completion(task_id: int):
+    """Monitor initialization task and update system state when complete"""
+    try:
+        while True:
+            await asyncio.sleep(5)  # Check every 5 seconds
+            
+            task = await database.tasks.get_by_id(task_id)
+            if task and task.status in ["completed", "failed"]:
+                app.state.initializing = False
+                
+                new_state = "ready" if task.status == "completed" else "uninitialized"
+                
+                # Broadcast state change
+                await manager.broadcast(json.dumps({
+                    "type": "system_state_change",
+                    "state": new_state
+                }))
+                
+                logger.info(f"System initialization {task.status}. New state: {new_state}")
+                break
+                
+    except Exception as e:
+        logger.error(f"Error monitoring initialization: {e}")
+        app.state.initializing = False
+
+
 @app.get("/system/config")
 async def get_system_config():
     """Get current system configuration"""
     max_concurrent = 5
     step_mode = False
     step_mode_threads = []
+    manual_step_mode = False
     
     if runtime_integration and runtime_integration.runtime_engine:
         max_concurrent = runtime_integration.runtime_engine.settings.max_concurrent_agents
         step_mode = runtime_integration.runtime_engine.settings.manual_stepping_enabled
         step_mode_threads = getattr(runtime_integration.runtime_engine.settings, "step_mode_threads", [])
+        manual_step_mode = step_mode  # For now, same as step_mode
     
     return {
         "max_parallel_tasks": max_concurrent,
         "step_mode": step_mode,
-        "step_mode_threads": step_mode_threads
+        "step_mode_threads": step_mode_threads,
+        "manual_step_mode": manual_step_mode,
+        "max_concurrent_agents": max_concurrent
     }
 
 
@@ -918,7 +1035,7 @@ else:
         <!DOCTYPE html>
         <html>
             <head>
-                <title>Self-Improving Agent System - Complete Foundation</title>
+                <title>Self-Improving Agent System - Process-First Architecture</title>
                 <style>
                     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; line-height: 1.6; }
                     .header { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
@@ -936,7 +1053,7 @@ else:
             <body>
                 <div class="header">
                     <h1>🤖 Self-Improving Agent System</h1>
-                    <p><strong>Complete Foundation</strong> - 9 Specialized Agents Ready</p>
+                    <p><strong>Process-First Foundation</strong> - 9 Specialized Agents with Framework Establishment</p>
                 </div>
                 
                 <div class="warning">
@@ -947,7 +1064,7 @@ else:
                 
                 <div class="status">
                     <h3>✅ API Server Running</h3>
-                    <p>Complete foundation with 9 agents, full MCP toolkit, and comprehensive documentation is operational.</p>
+                    <p>Process-first foundation with systematic framework establishment, 9 agents, and isolated task success is operational.</p>
                 </div>
                 
                 <div class="links">
@@ -967,16 +1084,16 @@ else:
 
 Examples:
 - Build a comprehensive performance monitoring dashboard with real-time analytics
-- Create advanced testing frameworks with automated quality gates  
-- Implement machine learning capabilities for pattern recognition
-- Develop sophisticated UI components for complex task visualization" rows="8"></textarea><br><br>
-                        <button type="submit">Submit Advanced Task</button>
+- Build comprehensive process framework library for common domains
+- Create framework validation suite for process completeness verification  
+- Implement isolation testing to verify independent subtask success" rows="8"></textarea><br><br>
+                        <button type="submit">Submit Task for Framework Analysis</button>
                     </form>
-                    <p style="margin-top: 15px;"><small><strong>Note:</strong> The complete foundation includes all 9 specialized agents and can handle sophisticated tasks immediately.</small></p>
+                    <p style="margin-top: 15px;"><small><strong>Note:</strong> All tasks undergo process discovery and framework establishment before execution.</small></p>
                 </div>
                 
                 <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; color: #666; font-size: 14px;">
-                    <p>Complete Foundation v1.0 | 9 Agents | Full MCP Toolkit | Ready for unlimited growth!</p>
+                    <p>Process-First Foundation v2.0 | 9 Agents | Framework-Driven Execution | Isolated Task Success!</p>
                 </footer>
             </body>
         </html>
