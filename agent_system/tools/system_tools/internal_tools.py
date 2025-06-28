@@ -7,14 +7,26 @@ These tools provide agents with access to system information and capabilities.
 from typing import Dict, Any, List, Optional
 import json
 from ..base_tool import SystemMCPTool
-from core.models import MCPToolResult
-from core.database_manager import database
+from pydantic import BaseModel, Field
+from typing import Dict, Any
+
+# Temporary compatibility model
+class MCPToolResult(BaseModel):
+    success: bool
+    result: Any = None
+    error_message: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: Optional[int] = None
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 
 
 class ListAgentsTool(SystemMCPTool):
     """Query available agent configurations"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="list_agents",
             description="Query available agent configurations in the system",
@@ -80,7 +92,7 @@ class ListAgentsTool(SystemMCPTool):
 class ListDocumentsTool(SystemMCPTool):
     """Query available context documents"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="list_documents",
             description="Query available context documents in the system",
@@ -160,7 +172,7 @@ class ListDocumentsTool(SystemMCPTool):
 class ListOptionalToolsTool(SystemMCPTool):
     """Query tools registry"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="list_optional_tools",
             description="Query the tools registry for available optional tools",
@@ -243,7 +255,7 @@ class ListOptionalToolsTool(SystemMCPTool):
 class QueryDatabaseTool(SystemMCPTool):
     """Direct SQLite database queries (read-only for most agents)"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="query_database",
             description="Execute read-only database queries for system introspection",

@@ -12,7 +12,16 @@ import asyncio
 import subprocess
 import json
 from ..base_tool import SystemMCPTool
-from core.models import MCPToolResult
+from pydantic import BaseModel, Field
+from typing import Dict, Any
+
+# Temporary compatibility model
+class MCPToolResult(BaseModel):
+    success: bool
+    result: Any = None
+    error_message: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: Optional[int] = None
 
 
 class GitOperationsTool(SystemMCPTool):
@@ -306,7 +315,8 @@ class DatabaseQueryTool(SystemMCPTool):
         
         try:
             # Import here to avoid circular imports
-            from core.database_manager import database
+            from agent_system.config.database import DatabaseManager
+            database = DatabaseManager()
             
             # Add LIMIT clause if not present
             if "limit" not in query.lower():

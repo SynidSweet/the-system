@@ -1,0 +1,242 @@
+# Tool Configuration for System Seeding
+# This file contains all tool definitions that will be seeded into the system
+
+tools:
+  - name: list_agents
+    description: Query available agent configurations
+    category: system
+    implementation:
+      type: python_class
+      module_path: tools.system_tools.internal_tools
+      class_name: ListAgentsTool
+    parameters:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [active, deprecated, testing, all]
+        include_details:
+          type: boolean
+    permissions:
+      - database_read
+
+  - name: list_documents
+    description: Query available context documents
+    category: system
+    implementation:
+      type: python_class
+      module_path: tools.system_tools.internal_tools
+      class_name: ListDocumentsTool
+    parameters:
+      type: object
+      properties:
+        category:
+          type: string
+        search:
+          type: string
+        include_content:
+          type: boolean
+    permissions:
+      - database_read
+
+  - name: list_optional_tools
+    description: Query tools registry
+    category: system
+    implementation:
+      type: python_class
+      module_path: tools.system_tools.internal_tools
+      class_name: ListOptionalToolsTool
+    parameters:
+      type: object
+      properties:
+        category:
+          type: string
+        status:
+          type: string
+        include_config:
+          type: boolean
+    permissions:
+      - database_read
+
+  - name: use_terminal
+    description: Execute shell commands
+    category: system
+    implementation:
+      type: mcp_integration
+      config:
+        type: shell_access
+        permissions: restricted
+    parameters:
+      type: object
+      properties:
+        command:
+          type: string
+        args:
+          type: array
+        working_directory:
+          type: string
+      required:
+        - command
+    permissions:
+      - shell_access
+
+  - name: github_operations
+    description: Git operations and repository management
+    category: system
+    implementation:
+      type: mcp_integration
+      config:
+        type: git_integration
+        permissions: full
+    parameters:
+      type: object
+      properties:
+        operation:
+          type: string
+        repository_path:
+          type: string
+        args:
+          type: array
+      required:
+        - operation
+    permissions:
+      - git_operations
+
+  - name: query_database
+    description: Direct SQLite database queries
+    category: system
+    implementation:
+      type: python_class
+      module_path: tools.system_tools.internal_tools
+      class_name: QueryDatabaseTool
+    parameters:
+      type: object
+      properties:
+        query:
+          type: string
+        parameters:
+          type: array
+        read_only:
+          type: boolean
+          default: true
+      required:
+        - query
+    permissions:
+      - database_read
+      - database_write
+
+  # Core MCP Tools
+  - name: break_down_task
+    description: Break down complex tasks into subtasks
+    category: core
+    implementation:
+      type: mcp_tool
+      module_path: tools.core_mcp.core_tools
+      class_name: BreakDownTaskTool
+    parameters:
+      type: object
+      properties:
+        task_description:
+          type: string
+        context:
+          type: object
+        max_subtasks:
+          type: integer
+          default: 5
+      required:
+        - task_description
+    permissions:
+      - spawn_agents
+
+  - name: create_subtask
+    description: Create and spawn subtask execution
+    category: core
+    implementation:
+      type: mcp_tool
+      module_path: tools.core_mcp.core_tools
+      class_name: CreateSubtaskTool
+    parameters:
+      type: object
+      properties:
+        instruction:
+          type: string
+        agent_name:
+          type: string
+        context:
+          type: object
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+          default: medium
+      required:
+        - instruction
+    permissions:
+      - spawn_agents
+
+  - name: end_task
+    description: Mark task as complete with results
+    category: core
+    implementation:
+      type: mcp_tool
+      module_path: tools.core_mcp.core_tools
+      class_name: EndTaskTool
+    parameters:
+      type: object
+      properties:
+        result:
+          type: string
+        status:
+          type: string
+          enum: [completed, failed, blocked]
+          default: completed
+        metadata:
+          type: object
+      required:
+        - result
+    permissions: []
+
+  - name: need_more_context
+    description: Request additional context or information
+    category: core
+    implementation:
+      type: mcp_tool
+      module_path: tools.core_mcp.core_tools
+      class_name: NeedMoreContextTool
+    parameters:
+      type: object
+      properties:
+        context_type:
+          type: string
+        description:
+          type: string
+        urgency:
+          type: string
+          enum: [low, medium, high]
+          default: medium
+      required:
+        - description
+    permissions:
+      - spawn_agents
+
+  - name: need_more_tools
+    description: Request additional tools or capabilities
+    category: core
+    implementation:
+      type: mcp_tool
+      module_path: tools.core_mcp.core_tools
+      class_name: NeedMoreToolsTool
+    parameters:
+      type: object
+      properties:
+        tool_description:
+          type: string
+        requirements:
+          type: object
+        urgency:
+          type: string
+          enum: [low, medium, high]
+          default: medium
+      required:
+        - tool_description
+    permissions:
+      - spawn_agents

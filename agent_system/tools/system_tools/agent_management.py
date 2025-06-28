@@ -3,8 +3,25 @@ Agent management tools for creating and modifying agents.
 """
 
 from typing import Dict, Any, List, Optional
-from core.models import Agent, Tool, MCPToolResult
-from core.database_manager import database
+from agent_system.core.entities import AgentEntity, ToolEntity
+from pydantic import BaseModel, Field
+from typing import Dict, Any
+
+# Temporary compatibility models
+class MCPToolResult(BaseModel):
+    success: bool
+    result: Any = None
+    error_message: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: Optional[int] = None
+
+# Type aliases for backward compatibility
+Agent = AgentEntity
+Tool = ToolEntity
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 from tools.base_tool import BaseMCPTool, tool_registry
 
 

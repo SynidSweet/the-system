@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.database_manager import database
 from core.entities.entity_manager import EntityManager
-from core.entities.agent_entity import AgentEntity
+from .agent import AgentEntity
 from core.entities.base import EntityState
 
 

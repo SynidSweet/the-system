@@ -220,3 +220,13 @@ When implementing new features:
 - **Bootstrap**: Converts docs → structured knowledge on first run
 
 The knowledge system ensures every task has the context needed for isolated success!
+
+## Module-Specific Documentation
+
+For detailed module documentation, see the CLAUDE.md files in each major directory:
+
+- **[Core System Logic](./agent_system/core/CLAUDE.md)**: Entity management, agent runtime, processes, knowledge system
+- **[Tool Ecosystem](./agent_system/tools/CLAUDE.md)**: MCP tools, system tools, external integrations
+- **[Web API Interface](./agent_system/api/CLAUDE.md)**: REST endpoints, WebSocket communication, middleware
+- **[Process Framework](./agent_system/core/processes/CLAUDE.md)**: Process-first architecture, domain analysis, framework establishment
+- **[Database Layer](./agent_system/database/CLAUDE.md)**: Entity persistence, migrations, relationships, performance

@@ -14,7 +14,11 @@ from pathlib import Path
 
 from ..base_process import BaseProcess
 from ..system_interface import SystemInterface
-from ..database_models import Task, TaskStatus
+from agent_system.core.entities import TaskEntity, TaskState
+
+# Type aliases for backward compatibility
+Task = TaskEntity
+TaskStatus = TaskState
 from ..knowledge.bootstrap import bootstrap_knowledge_system
 from ..initialization_tasks import get_initialization_tasks, get_tasks_by_phase, get_phase_descriptions
 

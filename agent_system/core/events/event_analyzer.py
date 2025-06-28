@@ -13,7 +13,10 @@ from .models import (
     EventPattern, EventAnomaly, SuccessPattern, PerformanceMetrics,
     OptimizationOpportunity, OptimizationImpact
 )
-from ..database_manager import database
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 
 
 class EventPatternAnalyzer:

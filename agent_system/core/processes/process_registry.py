@@ -6,7 +6,7 @@ from typing import Dict, Type, Optional, List, Any
 from pathlib import Path
 import logging
 
-from agent_system.core.processes.base import BaseProcess
+from agent_system.core.processes.base_process import BaseProcess
 from agent_system.core.entities.entity_manager import EntityManager
 from agent_system.core.events.event_manager import EventManager
 

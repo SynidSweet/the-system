@@ -20,7 +20,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config.database import db_manager
-from core.database_manager import database
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 from tools.base_tool import tool_registry
 from tools.core_mcp.core_tools import register_core_tools
 from tools.system_tools.mcp_integrations import register_system_tools
@@ -44,7 +47,28 @@ async def seed_minimal_agents():
     """Seed ONLY the agent_selector - everything else built by agents"""
     print("🤖 Seeding minimal agent (agent_selector only)...")
     
-    from core.models import Agent, AgentPermissions, ModelConfig
+    from agent_system.core.entities import AgentEntity
+    from pydantic import BaseModel
+    from typing import Optional
+    
+    # Temporary compatibility models
+    class AgentPermissions(BaseModel):
+        web_search: bool = False
+        file_system: bool = False
+        shell_access: bool = False
+        git_operations: bool = False
+        database_write: bool = False
+        spawn_agents: bool = True
+    
+    class ModelConfig(BaseModel):
+        provider: str = "google"
+        model_name: str = "gemini-2.5-flash-preview-05-20"
+        temperature: float = 0.1
+        max_tokens: int = 4000
+        api_key: Optional[str] = None
+    
+    # Type alias for backward compatibility
+    Agent = AgentEntity
     
     # Only create the agent_selector - everything else will be built by agents
     agent_selector = Agent(
@@ -99,7 +123,10 @@ async def seed_minimal_context():
     """Seed minimal context - just system overview"""
     print("📚 Seeding minimal context...")
     
-    from core.models import ContextDocument
+    from agent_system.core.entities import ContextEntity
+    
+    # Type alias for backward compatibility
+    ContextDocument = ContextEntity
     
     system_overview = ContextDocument(
         name="system_overview",

@@ -6,7 +6,7 @@ import logging
 
 from agent_system.core.runtime.engine import RuntimeEngine, RuntimeSettings
 from agent_system.core.runtime.state_machine import TaskState
-from agent_system.core.processes.registry import ProcessRegistry, initialize_process_registry
+from agent_system.core.processes.process_registry import ProcessRegistry, initialize_process_registry
 from agent_system.core.events.event_manager import EventManager
 from agent_system.core.entities.entity_manager import EntityManager
 from agent_system.core.events.event_types import EntityType
@@ -119,7 +119,7 @@ class RuntimeIntegration:
             if tool_system:
                 try:
                     # Get agent type from task
-                    from agent_system.core.entities.task_entity import TaskEntity
+                    from .task import TaskEntity
                     task = await self.entity_manager.get_entity(EntityType.TASK, task_id)
                     agent_type = task.metadata.get("agent_type", "unknown") if task else "unknown"
                     
@@ -244,7 +244,7 @@ class RuntimeIntegration:
         
         try:
             # Get task from entity manager
-            from agent_system.core.entities.task_entity import TaskEntity
+            from .task import TaskEntity
             task = await self.entity_manager.get_entity(EntityType.TASK, task_id)
             
             if not task or not isinstance(task, TaskEntity):

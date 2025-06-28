@@ -1,0 +1,337 @@
+# Document Configuration for System Seeding
+# This file contains all context document definitions that will be seeded into the system
+
+# Documents loaded from filesystem
+filesystem_docs:
+  # Load all markdown files from docs/ directory
+  docs_directory: "../../../docs"
+  pattern: "*.md"
+  category: "system"
+
+# Agent-specific guide documents
+agent_guides:
+  - name: agent_selector_guide
+    title: "Agent Selector - Task Routing and Agent Selection Guide"
+    category: agent_guide
+    file_path: "../../../docs/agent_contexts/agent_selector_guide.md"
+
+  - name: task_breakdown_guide
+    title: "Task Breakdown - Recursive Decomposition Guide"
+    category: agent_guide
+    file_path: "../../../docs/agent_contexts/task_breakdown_guide.md"
+
+  - name: context_addition_guide
+    title: "Context Addition - Knowledge Management and Enhancement Guide"
+    category: agent_guide
+    file_path: "../../../docs/agent_contexts/context_addition_guide.md"
+
+  - name: tool_addition_guide
+    title: "Tool Addition - Capability Discovery and Enhancement Guide"
+    category: agent_guide
+    file_path: "../../../docs/agent_contexts/tool_addition_guide.md"
+
+  - name: task_evaluator_guide
+    title: "Task Evaluator - Quality Assessment and Validation Guide"
+    category: agent_guide
+    file_path: "../../../docs/agent_contexts/task_evaluator_guide.md"
+
+  - name: documentation_agent_guide
+    title: "Documentation Agent - Knowledge Capture and System Transparency Guide"
+    category: agent_guide
+    file_path: "../../../docs/agent_contexts/documentation_agent_guide.md"
+
+  - name: summary_agent_guide
+    title: "Summary Agent - Information Synthesis and Communication Guide"
+    category: agent_guide
+    file_path: "../../../docs/agent_contexts/summary_agent_guide.md"
+
+  - name: review_agent_guide
+    title: "Review Agent - System Improvement and Evolution Guide"
+    category: agent_guide
+    file_path: "../../../docs/agent_contexts/review_agent_guide.md"
+
+# System reference documents with inline content
+system_references:
+  - name: agent_registry
+    title: "Agent Registry and Capabilities"
+    category: reference
+    content: |
+      # Agent Registry
+
+      ## Available Agent Types
+
+      ### agent_selector
+      **Purpose**: Task routing and agent selection
+      **Use when**: Need to determine the right agent for a task
+      **Capabilities**: Analyzes tasks, routes to appropriate agents, creates new agent types
+
+      ### task_breakdown  
+      **Purpose**: Complex task decomposition
+      **Use when**: Tasks have multiple steps or complex requirements
+      **Capabilities**: Breaks down problems, creates subtasks, manages dependencies
+
+      ### context_addition
+      **Purpose**: Knowledge and context management
+      **Use when**: Agents need domain knowledge or additional context
+      **Capabilities**: Creates documentation, gathers context, manages knowledge base
+
+      ### tool_addition
+      **Purpose**: Capability expansion and tool development
+      **Use when**: Agents need new tools or integrations
+      **Capabilities**: Discovers tools, creates MCP integrations, builds custom tools
+
+      ### task_evaluator
+      **Purpose**: Quality assessment and validation
+      **Use when**: Need to validate task completion and quality
+      **Capabilities**: Evaluates results, checks quality, provides feedback
+
+      ### documentation_agent
+      **Purpose**: System documentation and knowledge capture
+      **Use when**: Need to document changes, procedures, or discoveries
+      **Capabilities**: Creates docs, updates knowledge base, maintains standards
+
+      ### summary_agent
+      **Purpose**: Information synthesis and reporting
+      **Use when**: Need concise summaries for parent agents
+      **Capabilities**: Synthesizes information, creates reports, filters noise
+
+      ### review_agent
+      **Purpose**: System improvement and optimization
+      **Use when**: Need to analyze and fix systemic issues
+      **Capabilities**: Analyzes problems, implements fixes, optimizes performance
+
+  - name: system_overview
+    title: "System Architecture and Design Overview"
+    category: reference
+    content: |
+      # System Overview
+
+      ## Purpose
+      This is a process-first recursive agent system that transforms undefined problems into systematic domains with established frameworks before execution.
+
+      ## Core Principles
+      1. **Process-First**: Every task requires systematic framework establishment before execution
+      2. **Isolated Success**: All subtasks must succeed independently with proper context
+      3. **Self-Improving**: Continuous optimization through systematic learning
+
+      ## Architecture
+      - 9 specialized agents with defined roles and capabilities
+      - Universal agent runtime for execution
+      - Comprehensive tool ecosystem via MCP protocol
+      - Knowledge system for context assembly and gap detection
+      - Event system for tracking and optimization
+
+      ## Agent Collaboration
+      Agents work together through the process-first approach:
+      1. Process discovery establishes frameworks
+      2. Agent selector routes tasks appropriately
+      3. Specialist agents execute within boundaries
+      4. Quality evaluation ensures success
+      5. Documentation captures learnings
+
+  - name: breakdown_guidelines
+    title: "Task Breakdown Guidelines and Patterns"
+    category: reference
+    content: |
+      # Task Breakdown Guidelines
+
+      ## Breakdown Principles
+      1. **Natural Structure**: Find the problem's inherent organization
+      2. **Clean Interfaces**: Each subtask should have clear inputs/outputs
+      3. **Independent Execution**: Subtasks should not depend on each other's internal state
+      4. **Specialist Matching**: Align subtasks with agent capabilities
+      5. **Parallel Opportunity**: Enable concurrent execution where possible
+
+      ## Common Patterns
+      - **Sequential**: Each step builds on the previous
+      - **Parallel**: Independent work streams that can run concurrently
+      - **Hierarchical**: Parent task with child subtasks
+      - **Pipeline**: Data flows through processing stages
+      - **Conditional**: Different paths based on analysis results
+
+      ## Quality Criteria
+      - Each subtask has sufficient context to succeed independently
+      - Clear success criteria for each component
+      - Proper error handling and recovery patterns
+      - Integration strategy for assembling results
+
+  - name: available_context
+    title: "Available Context Documents and Resources"
+    category: reference
+    content: |
+      # Available Context Resources
+
+      ## System Documentation
+      - Architecture overviews and design decisions
+      - Development workflow and conventions
+      - API documentation and integration guides
+      - Performance and monitoring guidelines
+
+      ## Agent Guides
+      - Individual agent capabilities and patterns
+      - Collaboration workflows and protocols
+      - Best practices and common approaches
+      - Tool usage and integration patterns
+
+      ## Domain Knowledge
+      - Technical implementation patterns
+      - Problem-solving frameworks
+      - Quality standards and criteria
+      - Optimization and improvement strategies
+
+      ## Process Frameworks
+      - Systematic approach templates
+      - Decision-making frameworks
+      - Evaluation and validation patterns
+      - Learning and improvement cycles
+
+  - name: documentation_standards
+    title: "Documentation Standards and Guidelines"
+    category: reference
+    content: |
+      # Documentation Standards
+
+      ## Writing Principles
+      1. **Actionable**: Focus on enabling decisions and actions
+      2. **Contextual**: Provide sufficient background for understanding
+      3. **Structured**: Use consistent organization and formatting
+      4. **Current**: Keep information accurate and up-to-date
+      5. **Accessible**: Write for the intended audience's expertise level
+
+      ## Document Types
+      - **Guides**: Step-by-step procedures and workflows
+      - **References**: Comprehensive coverage of capabilities and options
+      - **Overviews**: High-level understanding and orientation
+      - **Standards**: Rules, conventions, and requirements
+      - **Patterns**: Reusable solutions and approaches
+
+      ## Quality Criteria
+      - Clear purpose and scope
+      - Logical organization and flow
+      - Sufficient detail for implementation
+      - Examples and concrete cases
+      - Cross-references to related information
+
+  - name: process_discovery_guide
+    title: "Process Discovery Framework and Implementation Guide"
+    category: agent_guide
+    content: |
+      # Process Discovery Guide
+
+      ## Overview
+      Process discovery is the foundation of the process-first approach. It establishes systematic frameworks before any task execution begins.
+
+      ## Core Responsibilities
+      1. **Domain Analysis**: Understand the problem domain and its requirements
+      2. **Framework Establishment**: Create systematic structures for execution
+      3. **Context Validation**: Ensure sufficient context for isolated success
+      4. **Boundary Definition**: Establish clear process limits and constraints
+      5. **Success Criteria**: Define how framework effectiveness will be measured
+
+      ## Process-First Workflow
+      1. **Analyze**: What systematic framework does this task require?
+      2. **Establish**: What rules, processes, and boundaries are needed?
+      3. **Validate**: Does each component have enough context to succeed independently?
+      4. **Verify**: Are the process limits clear and enforceable?
+      5. **Confirm**: How will we know the framework enables systematic execution?
+
+      ## Framework Quality Criteria
+      - Complete domain coverage
+      - Clear boundaries and constraints
+      - Sufficient context for isolated execution
+      - Measurable success criteria
+      - Self-improvement mechanisms
+
+      ## Common Patterns
+      - **Analysis → Design → Implementation → Validation**
+      - **Research → Planning → Execution → Review**
+      - **Discovery → Specification → Development → Testing**
+      - **Assessment → Strategy → Tactics → Evaluation**
+
+  - name: systematic_framework_principles
+    title: "Systematic Framework Design Principles"
+    category: reference
+    content: |
+      # Systematic Framework Principles
+
+      ## Foundation Principles
+      1. **Completeness**: Every aspect of the domain must be addressed
+      2. **Consistency**: Rules and patterns must be applied uniformly
+      3. **Isolation**: Components must be able to succeed independently
+      4. **Measurability**: Progress and success must be quantifiable
+      5. **Adaptability**: Frameworks must evolve based on learning
+
+      ## Design Guidelines
+      - Start with the problem domain, not the solution
+      - Establish boundaries before defining processes
+      - Ensure context sufficiency at every level
+      - Plan for failure modes and recovery
+      - Build in feedback and improvement mechanisms
+
+      ## Validation Criteria
+      - Can each component succeed with only its allocated context?
+      - Are the success criteria clear and measurable?
+      - Do the boundaries prevent harmful interactions?
+      - Is the framework complete enough to handle edge cases?
+      - Does the framework enable learning and improvement?
+
+  - name: domain_analysis_patterns
+    title: "Domain Analysis Patterns and Methodologies"
+    category: reference
+    content: |
+      # Domain Analysis Patterns
+
+      ## Analysis Dimensions
+      1. **Complexity**: How complex is the problem space?
+      2. **Uncertainty**: How much is unknown or ambiguous?
+      3. **Dependencies**: What external factors affect success?
+      4. **Constraints**: What limits exist on solutions?
+      5. **Success Criteria**: How will completion be recognized?
+
+      ## Common Domain Types
+      - **Technical Implementation**: Code, systems, integrations
+      - **Process Design**: Workflows, procedures, standards
+      - **Knowledge Synthesis**: Research, analysis, documentation
+      - **Quality Assurance**: Testing, validation, optimization
+      - **System Integration**: Coordination, communication, orchestration
+
+      ## Analysis Framework
+      1. **Scope Definition**: What is included/excluded?
+      2. **Stakeholder Identification**: Who is affected?
+      3. **Constraint Analysis**: What limits exist?
+      4. **Success Metrics**: How will success be measured?
+      5. **Risk Assessment**: What could go wrong?
+
+  - name: process_establishment_guidelines
+    title: "Process Establishment Guidelines and Best Practices"
+    category: reference
+    content: |
+      # Process Establishment Guidelines
+
+      ## Establishment Steps
+      1. **Define Scope**: Clear boundaries and coverage
+      2. **Identify Components**: Key elements and relationships
+      3. **Establish Rules**: Governing principles and constraints
+      4. **Design Workflows**: Step-by-step procedures
+      5. **Create Validation**: Quality checks and success criteria
+
+      ## Quality Checkpoints
+      - Is the scope complete and well-defined?
+      - Are all necessary components identified?
+      - Do the rules prevent conflicts and enable success?
+      - Are the workflows practical and efficient?
+      - Will validation catch problems early?
+
+      ## Common Anti-Patterns
+      - Starting execution before framework completion
+      - Creating overly complex or rigid structures
+      - Insufficient context for independent execution
+      - Missing validation and feedback mechanisms
+      - Ignoring boundary conditions and edge cases
+
+      ## Success Indicators
+      - Clear, unambiguous process definitions
+      - Sufficient context for isolated execution
+      - Measurable progress and completion criteria
+      - Built-in learning and improvement mechanisms
+      - Successful execution without ad-hoc decisions

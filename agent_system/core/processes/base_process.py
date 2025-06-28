@@ -8,7 +8,7 @@ import logging
 from dataclasses import dataclass
 
 from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.entities.task_entity import TaskEntity, TaskState
+from agent_system.core.entities.task import TaskEntity, TaskState
 from agent_system.core.events.event_manager import EventManager
 from agent_system.core.events.event_types import EventType, EntityType
 
@@ -279,7 +279,7 @@ class SystemFunctions:
         **metadata
     ) -> str:
         """Create new context document entity."""
-        from agent_system.core.entities.context_entity import ContextCategory, ContextFormat
+        from agent_system.core.entities.context import ContextCategory, ContextFormat
         
         doc = await self.entity_manager.create_entity(
             EntityType.DOCUMENT,

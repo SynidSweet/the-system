@@ -6,7 +6,25 @@ import re
 from datetime import datetime
 
 from config.settings import settings
-from .models import ModelConfig, MCPToolCall
+from typing import Dict, Any
+from pydantic import BaseModel, Field
+from enum import Enum
+
+# Temporary compatibility models - these should be migrated to proper entities
+class ModelConfig(BaseModel):
+    provider: str = "google"
+    model_name: str = "gemini-2.5-flash-preview-05-20"
+    temperature: float = 0.1
+    max_tokens: int = 4000
+    api_key: Optional[str] = None
+    
+    class Config:
+        protected_namespaces = ()
+
+class MCPToolCall(BaseModel):
+    tool_name: str
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+    call_id: Optional[str] = None
 
 
 class AIModelProvider(ABC):

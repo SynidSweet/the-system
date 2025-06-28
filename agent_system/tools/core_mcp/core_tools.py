@@ -1,14 +1,30 @@
 from typing import Dict, Any, Optional
 import json
-from core.models import MCPToolResult, TaskStatus
-from core.database_manager import database
+from agent_system.core.entities import TaskEntity, TaskState
+from agent_system.core.types import ToolResult, TaskMetadata
+from pydantic import BaseModel, Field
+
+# Temporary compatibility models
+class MCPToolResult(BaseModel):
+    success: bool
+    result: Any = None
+    error_message: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: Optional[int] = None
+
+# Type alias for backward compatibility
+TaskStatus = TaskState
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 from ..base_tool import CoreMCPTool
 
 
 class BreakDownTaskTool(CoreMCPTool):
     """Spawn breakdown agent for current task"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="break_down_task",
             description="Break down the current task into smaller, manageable subtasks by spawning a task breakdown agent",
@@ -57,7 +73,8 @@ class BreakDownTaskTool(CoreMCPTool):
                     error_message="task_breakdown agent not found"
                 )
             
-            from core.models import Task
+            # Use TaskEntity instead of legacy Task model
+            Task = TaskEntity
             
             # Create subtask for breakdown
             subtask = Task(
@@ -93,7 +110,7 @@ class BreakDownTaskTool(CoreMCPTool):
 class StartSubtaskTool(CoreMCPTool):
     """Create isolated subtask with specific agent"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="start_subtask",
             description="Create a new subtask in the same tree with a specific agent type",
@@ -155,7 +172,8 @@ class StartSubtaskTool(CoreMCPTool):
                 )
             
             # Import Task model here to avoid circular imports
-            from core.models import Task
+            # Use TaskEntity instead of legacy Task model
+            Task = TaskEntity
             
             # Create subtask
             subtask = Task(
@@ -193,7 +211,7 @@ class StartSubtaskTool(CoreMCPTool):
 class RequestContextTool(CoreMCPTool):
     """Spawn context addition agent"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="request_context",
             description="Request additional context documents by spawning a context addition agent",
@@ -250,7 +268,8 @@ class RequestContextTool(CoreMCPTool):
                     error_message="context_addition agent not found"
                 )
             
-            from core.models import Task
+            # Use TaskEntity instead of legacy Task model
+            Task = TaskEntity
             
             # Adjust priority based on urgency
             priority_boost = {"low": 0, "medium": 1, "high": 2}.get(urgency, 1)
@@ -289,7 +308,7 @@ class RequestContextTool(CoreMCPTool):
 class RequestToolsTool(CoreMCPTool):
     """Spawn tool discovery/creation agent"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="request_tools",
             description="Request additional tools by spawning a tool addition agent",
@@ -345,7 +364,8 @@ class RequestToolsTool(CoreMCPTool):
                     error_message="tool_addition agent not found"
                 )
             
-            from core.models import Task
+            # Use TaskEntity instead of legacy Task model
+            Task = TaskEntity
             
             # Create subtask for tool addition
             subtask = Task(
@@ -381,7 +401,7 @@ class RequestToolsTool(CoreMCPTool):
 class EndTaskTool(CoreMCPTool):
     """Mark task complete (success/failure)"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="end_task",
             description="Mark the current task as complete and trigger evaluation/documentation",
@@ -441,7 +461,7 @@ class EndTaskTool(CoreMCPTool):
 class FlagForReviewTool(CoreMCPTool):
     """Queue item for manual review"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             name="flag_for_review",
             description="Flag an issue or decision for manual human review",

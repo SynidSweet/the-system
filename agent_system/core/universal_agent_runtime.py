@@ -8,12 +8,77 @@ import time
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from .models import (
-    Task, Agent, Message, ContextDocument, Tool, 
-    TaskStatus, MessageType, AgentExecutionContext, 
-    AgentExecutionResult, MCPToolCall, MCPToolResult
+from agent_system.core.entities import (
+    TaskEntity, AgentEntity, ToolEntity, ContextEntity,
+    TaskState, EntityManager
 )
-from .database_manager import database
+from agent_system.core.events.models import Event
+
+# Legacy model imports that still need to be implemented
+from typing import Dict, Any, List
+from pydantic import BaseModel, Field
+from enum import Enum
+
+# Temporary compatibility models - these should be migrated properly
+class MessageType(str, Enum):
+    USER_INPUT = "user_input"
+    AGENT_RESPONSE = "agent_response"
+    TOOL_CALL = "tool_call"
+    TOOL_RESPONSE = "tool_response"
+    SYSTEM_EVENT = "system_event"
+    ERROR = "error"
+
+class Message(BaseModel):
+    id: Optional[int] = None
+    task_id: int
+    message_type: MessageType
+    content: str
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    parent_message_id: Optional[int] = None
+    timestamp: Optional[float] = None
+    token_count: Optional[int] = None
+    execution_time_ms: Optional[int] = None
+
+class MCPToolCall(BaseModel):
+    tool_name: str
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+    call_id: Optional[str] = None
+
+class MCPToolResult(BaseModel):
+    success: bool
+    result: Any = None
+    error_message: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: Optional[int] = None
+
+class AgentExecutionContext(BaseModel):
+    task: TaskEntity
+    agent: AgentEntity
+    context_documents: List[ContextEntity] = Field(default_factory=list)
+    available_tools: List[ToolEntity] = Field(default_factory=list)
+    message_history: List[Message] = Field(default_factory=list)
+    recursion_depth: int = 0
+
+class AgentExecutionResult(BaseModel):
+    status: TaskState
+    result: Optional[str] = None
+    summary: Optional[str] = None
+    error_message: Optional[str] = None
+    messages: List[Message] = Field(default_factory=list)
+    spawned_tasks: List[int] = Field(default_factory=list)
+    tool_calls_made: int = 0
+    execution_time_seconds: float = 0
+
+# Type aliases for backward compatibility
+Task = TaskEntity
+Agent = AgentEntity
+Tool = ToolEntity
+ContextDocument = ContextEntity
+TaskStatus = TaskState
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 from .ai_models import ai_model_manager
 from .websocket_messages import WebSocketMessage, MessageBuilder
 from .websocket_messages import MessageType as WSMessageType

@@ -11,7 +11,16 @@ This tool allows agents to send messages directly to users for:
 
 from typing import Dict, Any, Optional
 from ..base_tool import SystemMCPTool
-from core.models import MCPToolResult
+from pydantic import BaseModel, Field
+from typing import Dict, Any
+
+# Temporary compatibility model
+class MCPToolResult(BaseModel):
+    success: bool
+    result: Any = None
+    error_message: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: Optional[int] = None
 
 
 class SendMessageToUserTool(SystemMCPTool):
@@ -88,7 +97,8 @@ class SendMessageToUserTool(SystemMCPTool):
             }
             
             # Store in database for persistence
-            from core.database_manager import database
+            from agent_system.config.database import DatabaseManager
+            database = DatabaseManager()
             message_id = await database.user_messages.create(user_message)
             
             # Send real-time notification via WebSocket

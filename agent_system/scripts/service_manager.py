@@ -17,7 +17,7 @@ from typing import Optional, Tuple, Dict
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 class ServiceManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.project_dir = Path(__file__).parent.parent
         self.venv_dir = self.project_dir.parent / "venv"
         self.logs_dir = self.project_dir / "logs"
@@ -328,7 +328,7 @@ class ServiceManager:
         time.sleep(0.5)  # Brief pause
         return self.start_frontend()
     
-    def status(self):
+    def status(self) -> None:
         """Show detailed status"""
         self._print("=== Agent System Status ===", self.GREEN)
         
@@ -359,7 +359,7 @@ class ServiceManager:
         else:
             self._print("Frontend: Stopped", self.RED)
     
-    def logs(self, service: str = "both", lines: int = 20):
+    def logs(self, service: str = "both", lines: int = 20) -> None:
         """Show recent logs"""
         if service in ["backend", "both"]:
             self._print(f"=== Backend Log (last {lines} lines) ===", self.GREEN)
@@ -382,7 +382,7 @@ class ServiceManager:
                 self._print("No frontend log available", self.YELLOW)
 
 
-def main():
+def main() -> None:
     """CLI interface"""
     manager = ServiceManager()
     

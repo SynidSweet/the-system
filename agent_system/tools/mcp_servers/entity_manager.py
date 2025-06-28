@@ -110,7 +110,7 @@ class EntityManagerMCP(MCPServer):
         if not await self.permission_manager.check_permission(agent_type, task_id, "write", "agent"):
             raise PermissionError("Insufficient permissions to create agent")
         
-        from agent_system.core.entities.agent_entity import AgentEntity
+        from .agent import AgentEntity
         
         agent = AgentEntity(
             id=0,  # Will be assigned by database
@@ -217,7 +217,7 @@ class EntityManagerMCP(MCPServer):
         if not await self.permission_manager.check_permission(agent_type, task_id, "write", "task"):
             raise PermissionError("Insufficient permissions to create task")
         
-        from agent_system.core.entities.task_entity import TaskEntity
+        from .task import TaskEntity
         
         task = TaskEntity(
             id=0,  # Will be assigned by database
@@ -338,7 +338,7 @@ class EntityManagerMCP(MCPServer):
         if not await self.permission_manager.check_permission(agent_type, task_id, "write", "document"):
             raise PermissionError("Insufficient permissions to create document")
         
-        from agent_system.core.entities.context_entity import ContextEntity
+        from .context import ContextEntity
         
         doc = ContextEntity(
             id=0,  # Will be assigned by database

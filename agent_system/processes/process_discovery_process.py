@@ -7,7 +7,13 @@ transforming undefined problems into systematic domains with complete structural
 
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from ..models import Task, TaskState, Agent, Process, Document
+from agent_system.core.entities import TaskEntity, TaskState, AgentEntity, ProcessEntity, ContextEntity
+
+# Type aliases for backward compatibility
+Task = TaskEntity
+Agent = AgentEntity
+Process = ProcessEntity
+Document = ContextEntity
 from ..core.process_base import ProcessBase
 from ..core.process_result import ProcessResult
 

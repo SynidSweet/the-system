@@ -3,7 +3,28 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 import asyncio
 import time
-from core.models import MCPToolCall, MCPToolResult, ToolImplementation
+from agent_system.core.entities import ToolEntity
+from pydantic import BaseModel, Field
+from typing import Dict, Any
+
+# Temporary compatibility models for MCP integration
+class MCPToolCall(BaseModel):
+    tool_name: str
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+    call_id: Optional[str] = None
+
+class MCPToolResult(BaseModel):
+    success: bool
+    result: Any = None
+    error_message: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    execution_time_ms: Optional[int] = None
+
+class ToolImplementation(BaseModel):
+    type: str  # "python_class", "shell_command", "api_call", "mcp_server"
+    module_path: Optional[str] = None
+    class_name: Optional[str] = None
+    config: Dict[str, Any] = Field(default_factory=dict)
 
 
 class BaseMCPTool(ABC):

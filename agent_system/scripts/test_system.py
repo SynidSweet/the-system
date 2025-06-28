@@ -25,7 +25,10 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config.database import db_manager
-from core.database_manager import database
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 from tools.base_tool import tool_registry
 from tools.core_mcp.core_tools import register_core_tools
 from tools.system_tools.mcp_integrations import register_system_tools
@@ -472,7 +475,16 @@ class SystemTester:
         """Test agent loading and basic instantiation"""
         try:
             from core.universal_agent import UniversalAgent
-            from core.models import AgentPermissions
+            from pydantic import BaseModel
+            
+            # Temporary compatibility model
+            class AgentPermissions(BaseModel):
+                web_search: bool = False
+                file_system: bool = False
+                shell_access: bool = False
+                git_operations: bool = False
+                database_write: bool = False
+                spawn_agents: bool = True
             
             # Create a test agent configuration
             agent_config = {

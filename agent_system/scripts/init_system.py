@@ -13,18 +13,22 @@ import asyncio
 import sys
 import os
 from pathlib import Path
+from typing import List, Dict, Any, Optional
 
 # Add the parent directory to the path so we can import our modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config.database import db_manager
-from core.database_manager import database
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 from tools.base_tool import tool_registry
 from tools.core_mcp.core_tools import register_core_tools
 from tools.system_tools.mcp_integrations import register_system_tools
 
 
-async def init_database():
+async def init_database() -> bool:
     """Initialize database connection and schema"""
     print("🔧 Initializing database...")
     
@@ -38,11 +42,32 @@ async def init_database():
         return False
 
 
-async def seed_core_agents():
+async def seed_core_agents() -> bool:
     """Seed the database with core agent configurations"""
     print("🤖 Seeding core agents...")
     
-    from core.models import Agent, AgentPermissions, ModelConfig
+    from agent_system.core.entities import AgentEntity
+    from pydantic import BaseModel
+    from typing import Optional
+    
+    # Temporary compatibility models
+    class AgentPermissions(BaseModel):
+        web_search: bool = False
+        file_system: bool = False
+        shell_access: bool = False
+        git_operations: bool = False
+        database_write: bool = False
+        spawn_agents: bool = True
+    
+    class ModelConfig(BaseModel):
+        provider: str = "google"
+        model_name: str = "gemini-2.5-flash-preview-05-20"
+        temperature: float = 0.1
+        max_tokens: int = 4000
+        api_key: Optional[str] = None
+    
+    # Type alias for backward compatibility
+    Agent = AgentEntity
     
     core_agents = [
         {
@@ -158,11 +183,14 @@ async def seed_core_agents():
     return True
 
 
-async def seed_context_documents():
+async def seed_context_documents() -> bool:
     """Seed the database with initial context documents"""
     print("📚 Seeding context documents...")
     
-    from core.models import ContextDocument
+    from agent_system.core.entities import ContextEntity
+    
+    # Type alias for backward compatibility
+    ContextDocument = ContextEntity
     
     context_docs = [
         {
@@ -296,7 +324,7 @@ This is a recursive agent system where a single universal agent design can solve
     return True
 
 
-async def register_tools():
+async def register_tools() -> bool:
     """Register all MCP tools with the tool registry"""
     print("🔧 Registering MCP tools...")
     
@@ -322,7 +350,7 @@ async def register_tools():
         return False
 
 
-async def health_check():
+async def health_check() -> bool:
     """Perform system health checks"""
     print("🏥 Performing health checks...")
     
@@ -377,7 +405,7 @@ async def health_check():
         return False
 
 
-async def main():
+async def main() -> bool:
     """Main initialization function"""
     print("🚀 Initializing Self-Improving Agent System...")
     print("=" * 50)

@@ -12,7 +12,7 @@ from agent_system.core.runtime.event_handler import RuntimeEventHandler
 from agent_system.core.events.event_manager import EventManager
 from agent_system.core.events.event_types import EventType, EntityType
 from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.entities.task_entity import TaskEntity
+from .task import TaskEntity
 
 
 logger = logging.getLogger(__name__)

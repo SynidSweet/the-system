@@ -11,7 +11,10 @@ from contextlib import asynccontextmanager
 
 from .event_types import EventType, EventOutcome, EntityType, CounterType
 from .models import Event, ResourceUsage, ReviewCounter
-from ..database_manager import database
+from agent_system.config.database import DatabaseManager
+
+# Create global database instance
+database = DatabaseManager()
 
 
 class EventManager:

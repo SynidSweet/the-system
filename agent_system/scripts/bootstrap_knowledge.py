@@ -10,6 +10,7 @@ import sys
 import os
 import logging
 from pathlib import Path
+from typing import Dict, Any, List, Optional
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -27,7 +28,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def test_knowledge_system():
+def test_knowledge_system() -> None:
     """Test the knowledge system after bootstrap."""
     logger.info("\nTesting knowledge system...")
     
@@ -90,7 +91,7 @@ def test_knowledge_system():
         logger.info("All relationships valid")
 
 
-def main():
+def main() -> None:
     """Main bootstrap function."""
     logger.info("=== Knowledge System Bootstrap ===")
     logger.info("Starting knowledge system bootstrap...")

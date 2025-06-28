@@ -3,7 +3,7 @@
 from typing import Dict, Any
 import logging
 
-from agent_system.core.processes.base import BaseProcess, ProcessResult
+from agent_system.core.processes.base_process import BaseProcess, ProcessResult
 from agent_system.core.runtime.state_machine import TaskState
 
 

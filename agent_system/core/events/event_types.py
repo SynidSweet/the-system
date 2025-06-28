@@ -2,6 +2,7 @@
 Event Types and Enums for the comprehensive event system
 """
 from enum import Enum
+from typing import TYPE_CHECKING
 
 
 class EventType(str, Enum):
