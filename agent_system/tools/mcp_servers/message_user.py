@@ -6,9 +6,9 @@ import asyncio
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from agent_system.tools.mcp_servers.base import MCPServer
-from agent_system.core.permissions.manager import DatabasePermissionManager
-from agent_system.core.websocket_messages import send_websocket_message
+from ..mcp_servers.base import MCPServer
+from ...core.permissions.manager import DatabasePermissionManager
+from ...core.websocket_messages import send_websocket_message
 
 logger = logging.getLogger(__name__)
 

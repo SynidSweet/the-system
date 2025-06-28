@@ -5,8 +5,8 @@ from collections import defaultdict, deque
 import asyncio
 from datetime import datetime
 
-from agent_system.core.events.event_types import EventType, EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..events.event_types import EventType, EntityType
+from ..events.event_manager import EventManager
 
 
 class DependencyNode:

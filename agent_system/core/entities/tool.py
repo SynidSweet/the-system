@@ -5,8 +5,8 @@ from datetime import datetime
 from enum import Enum
 import json
 
-from agent_system.core.entities.base import Entity, EntityState
-from agent_system.core.events.event_types import EntityType
+from ..entities.base import Entity, EntityState
+from ..events.event_types import EntityType
 
 
 class ToolCategory(str, Enum):

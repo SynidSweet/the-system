@@ -19,7 +19,7 @@ from typing import List, Dict, Any, Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config.database import db_manager
-from agent_system.config.database import DatabaseManager
+from ..config.database import DatabaseManager
 
 # Create global database instance
 database = DatabaseManager()
@@ -46,7 +46,7 @@ async def seed_core_agents() -> bool:
     """Seed the database with core agent configurations"""
     print("🤖 Seeding core agents...")
     
-    from agent_system.core.entities import AgentEntity
+    from ..core.entities import AgentEntity
     from pydantic import BaseModel
     from typing import Optional
     
@@ -187,7 +187,7 @@ async def seed_context_documents() -> bool:
     """Seed the database with initial context documents"""
     print("📚 Seeding context documents...")
     
-    from agent_system.core.entities import ContextEntity
+    from ..core.entities import ContextEntity
     
     # Type alias for backward compatibility
     ContextDocument = ContextEntity

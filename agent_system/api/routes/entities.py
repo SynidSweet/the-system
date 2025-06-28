@@ -4,8 +4,11 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Dict, Any, List
 
-from agent_system.config.database import DatabaseManager
-from agent_system.api.exceptions import EntityNotFoundError, ValidationError
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+from config.database import DatabaseManager
+from ..exceptions import EntityNotFoundError, ValidationError
 
 
 # Request models
@@ -13,7 +16,7 @@ class AgentUpdate(BaseModel):
     instruction: str = None
     available_tools: List[str] = None
     context_documents: List[str] = None
-    model_config: Dict[str, Any] = None
+    model_configuration: Dict[str, Any] = None
     permissions: Dict[str, Any] = None
 
 
@@ -29,13 +32,13 @@ class UserMessageResponse(BaseModel):
 # Dependencies
 def get_database():
     """Get database instance"""
-    from agent_system.api.main import database
+    from ..main import database
     return database
 
 
 def get_websocket_manager():
     """Get WebSocket connection manager"""
-    from agent_system.api.websocket.handlers import manager
+    from ..websocket.handlers import manager
     return manager
 
 

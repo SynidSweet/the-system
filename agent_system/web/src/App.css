@@ -14,6 +14,298 @@ body {
   color: #e0e0e0;
 }
 
+/* Error Boundary Styles */
+.error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #1a1a1a;
+}
+
+.error-container {
+  max-width: 600px;
+  background: #2d1b1b;
+  border: 1px solid #d32f2f;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-container h2 {
+  color: #f44336;
+  margin-bottom: 1rem;
+}
+
+.error-details {
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.error-details summary {
+  cursor: pointer;
+  padding: 0.5rem;
+  background: #333;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.error-message, .error-stack, .error-component-stack {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+.error-message strong, .error-stack strong, .error-component-stack strong {
+  color: #f44336;
+}
+
+.error-stack pre, .error-component-stack pre {
+  white-space: pre-wrap;
+  font-size: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.error-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.retry-button, .reload-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.retry-button {
+  background: #4caf50;
+  color: white;
+}
+
+.retry-button:hover {
+  background: #45a049;
+}
+
+.reload-button {
+  background: #2196f3;
+  color: white;
+}
+
+.reload-button:hover {
+  background: #1976d2;
+}
+
+/* Task Tree Visualization Styles */
+.task-tree-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tree-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #2a2a2a;
+  border-bottom: 1px solid #333;
+}
+
+.tree-header h3 {
+  margin: 0;
+  color: #e0e0e0;
+}
+
+.refresh-button {
+  padding: 0.5rem 1rem;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.refresh-button:hover {
+  background: #1976d2;
+}
+
+.tree-legend {
+  padding: 0.5rem 1rem;
+  background: #2a2a2a;
+  border-bottom: 1px solid #333;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.legend-item {
+  margin-right: 1rem;
+}
+
+.tree-visualization {
+  flex: 1;
+  overflow: auto;
+  background: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.task-tree-svg {
+  background: #1a1a1a;
+}
+
+.tree-node-text {
+  fill: #e0e0e0;
+  font-size: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.node-instruction {
+  fill: #e0e0e0;
+  font-weight: bold;
+}
+
+.node-agent {
+  fill: #aaa;
+  font-size: 10px;
+}
+
+.tree-path {
+  stroke: #555;
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.tree-loading, .tree-error, .tree-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #aaa;
+}
+
+.tree-error {
+  color: #f44336;
+}
+
+/* View Toggle Styles */
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.toggle-button {
+  padding: 0.5rem 1rem;
+  background: #333;
+  color: #aaa;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.toggle-button.active {
+  background: #2196f3;
+  color: white;
+  border-color: #2196f3;
+}
+
+.toggle-button:hover:not(.active) {
+  background: #444;
+}
+
+/* Enhanced Message Stream Styles */
+.message-stream.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.empty-state {
+  text-align: center;
+  color: #aaa;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.message-type {
+  font-size: 11px;
+  color: #666;
+  text-transform: capitalize;
+  background: #333;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.message-started {
+  border-left: 4px solid #4caf50;
+}
+
+.message-completed {
+  border-left: 4px solid #2196f3;
+}
+
+.agent-started, .agent-completed {
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.agent-completed {
+  background: rgba(33, 150, 243, 0.1);
+}
+
+.agent-status {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 0.25rem;
+}
+
+/* Thread List Enhanced Styles */
+.thread-list-empty, .thread-list-filtered-empty {
+  padding: 2rem;
+  text-align: center;
+  color: #aaa;
+}
+
+.thread-item {
+  cursor: pointer;
+  outline: none;
+}
+
+.thread-item:focus {
+  box-shadow: 0 0 0 2px #2196f3;
+  border-radius: 4px;
+}
+
 .app {
   display: flex;
   flex-direction: column;

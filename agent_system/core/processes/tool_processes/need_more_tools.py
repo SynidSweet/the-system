@@ -3,9 +3,9 @@
 import logging
 from typing import Dict, Any, Optional
 
-from agent_system.core.processes.base_process import BaseProcess
-from agent_system.core.entities.task import TaskEntity
-from agent_system.core.events.event_types import EntityType
+from ..base_process import BaseProcess
+from ...entities.task import TaskEntity
+from ...events.event_types import EntityType
 
 logger = logging.getLogger(__name__)
 

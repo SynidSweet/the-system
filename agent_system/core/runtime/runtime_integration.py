@@ -4,12 +4,12 @@ import asyncio
 from typing import Optional, Dict, Any
 import logging
 
-from agent_system.core.runtime.engine import RuntimeEngine, RuntimeSettings
-from agent_system.core.runtime.state_machine import TaskState
-from agent_system.core.processes.process_registry import ProcessRegistry, initialize_process_registry
-from agent_system.core.events.event_manager import EventManager
-from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.events.event_types import EntityType
+from ..runtime.engine import RuntimeEngine, RuntimeSettings
+from ..runtime.state_machine import TaskState
+from ..processes.process_registry import ProcessRegistry, initialize_process_registry
+from ..events.event_manager import EventManager
+from ..entities.entity_manager import EntityManager
+from ..events.event_types import EntityType
 
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ class RuntimeIntegration:
             server_name, operation = tool_name.split(".", 1)
             
             # Get tool system manager if available
-            from agent_system.tools.mcp_servers.startup import get_tool_system_manager
+            from ...tools.mcp_servers.startup import get_tool_system_manager
             tool_system = get_tool_system_manager()
             
             if tool_system:
@@ -296,4 +296,4 @@ def get_runtime_integration() -> Optional[RuntimeIntegration]:
 
 
 # Fix missing import
-from agent_system.core.events.event_types import EntityType
+from ..events.event_types import EntityType

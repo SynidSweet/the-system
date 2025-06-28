@@ -5,9 +5,9 @@ from typing import Dict, List, Optional, Any, Type
 from datetime import datetime
 import aiosqlite
 
-from agent_system.core.entities.base import Entity, EntityState
-from agent_system.core.events.event_types import EntityType, EventType
-from agent_system.core.events.event_manager import EventManager
+from ..base import Entity, EntityState
+from ...events.event_types import EntityType, EventType
+from ...events.event_manager import EventManager
 from .db_operations import DatabaseOperations
 
 

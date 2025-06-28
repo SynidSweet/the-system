@@ -3,8 +3,8 @@
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-from agent_system.core.entities.base import Entity, EntityState
-from agent_system.core.events.event_types import EntityType, EventType, EventOutcome
+from ..entities.base import Entity, EntityState
+from ..events.event_types import EntityType, EventType, EventOutcome
 
 
 class EventEntity(Entity):

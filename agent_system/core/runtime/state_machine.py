@@ -5,8 +5,8 @@ from typing import Dict, List, Set, Optional, Callable
 from datetime import datetime
 import asyncio
 
-from agent_system.core.events.event_types import EventType, EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..events.event_types import EventType, EntityType
+from ..events.event_manager import EventManager
 
 
 class TaskState(str, Enum):

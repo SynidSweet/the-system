@@ -7,7 +7,7 @@ Provides file-based storage for knowledge entities with search and retrieval cap
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Iterator, Set
+from typing import Dict, List, Optional, Iterator, Set, Any
 import logging
 from datetime import datetime
 

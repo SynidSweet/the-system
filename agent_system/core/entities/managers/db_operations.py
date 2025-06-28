@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 import aiosqlite
 
-from agent_system.core.events.event_types import EntityType
+from ...events.event_types import EntityType
 
 
 class DatabaseOperations:

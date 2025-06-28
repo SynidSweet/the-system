@@ -25,7 +25,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config.database import db_manager
-from agent_system.config.database import DatabaseManager
+from ..config.database import DatabaseManager
 
 # Create global database instance
 database = DatabaseManager()

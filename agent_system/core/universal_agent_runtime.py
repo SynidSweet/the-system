@@ -8,11 +8,11 @@ import time
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from agent_system.core.entities import (
+from .entities import (
     TaskEntity, AgentEntity, ToolEntity, ContextEntity,
     TaskState, EntityManager
 )
-from agent_system.core.events.models import Event
+from .events.models import Event
 
 # Legacy model imports that still need to be implemented
 from typing import Dict, Any, List
@@ -52,6 +52,8 @@ class MCPToolResult(BaseModel):
     execution_time_ms: Optional[int] = None
 
 class AgentExecutionContext(BaseModel):
+    model_config = {"arbitrary_types_allowed": True}
+    
     task: TaskEntity
     agent: AgentEntity
     context_documents: List[ContextEntity] = Field(default_factory=list)
@@ -75,7 +77,7 @@ Agent = AgentEntity
 Tool = ToolEntity
 ContextDocument = ContextEntity
 TaskStatus = TaskState
-from agent_system.config.database import DatabaseManager
+from ..config.database import DatabaseManager
 
 # Create global database instance
 database = DatabaseManager()
@@ -86,9 +88,9 @@ from .runtime.runtime_integration import get_runtime_integration
 from .runtime.state_machine import TaskState
 from .events.event_manager import EventManager
 from .events.event_types import EventType, EntityType, EventOutcome
-from tools.base_tool import tool_registry
-from config.settings import settings
-from config.model_config import AGENT_MODEL_PREFERENCES, ModelSelector
+from agent_system.tools.base_tool import tool_registry
+from agent_system.config.settings import settings
+from agent_system.config.model_config import AGENT_MODEL_PREFERENCES, ModelSelector
 
 
 class UniversalAgentRuntime:
@@ -161,7 +163,7 @@ class UniversalAgentRuntime:
                 available_tools.extend(additional_tools)
             
             # Add MCP tools based on permissions
-            from agent_system.tools.mcp_servers.startup import get_tool_system_manager
+            from ..tools.mcp_servers.startup import get_tool_system_manager
             tool_system = get_tool_system_manager()
             if tool_system:
                 # Get agent type from task metadata or agent name
@@ -170,7 +172,7 @@ class UniversalAgentRuntime:
                 
                 # Create tool objects for MCP tools
                 for tool_name in mcp_tools:
-                    from agent_system.core.models import Tool
+                    from .models import Tool
                     # Create pseudo-tool objects for MCP servers
                     mcp_tool = Tool(
                         id=0,

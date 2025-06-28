@@ -13,8 +13,8 @@ from .entity import (
     KnowledgeMetadata
 )
 from .storage import KnowledgeStorage
-from .engine import ContextAssemblyEngine, ContextPackage, ValidationResult
-from .bootstrap import DocumentationConverter
+from .models import ContextPackage, ValidationResult, KnowledgeGap
+from .engine import ContextAssemblyEngine
 
 __all__ = [
     'KnowledgeEntity',
@@ -27,5 +27,5 @@ __all__ = [
     'ContextAssemblyEngine',
     'ContextPackage',
     'ValidationResult',
-    'DocumentationConverter'
+    'KnowledgeGap'
 ]

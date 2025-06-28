@@ -5,9 +5,9 @@ import os
 import tempfile
 from typing import Dict, Any
 
-from agent_system.core.repositories import RepositoryFactory, RepositoryManager
-from agent_system.core.events.event_types import EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..core.repositories import RepositoryFactory, RepositoryManager
+from ..core.events.event_types import EntityType
+from ..core.events.event_manager import EventManager
 
 
 async def database_repository_demo():
@@ -119,7 +119,7 @@ def usage_patterns_demo():
     
     print("Pattern 1: Direct Repository Creation")
     print("""
-    from agent_system.core.repositories import AgentRepository
+    from ..core.repositories import AgentRepository
     
     repo = AgentRepository(db_path="/path/to/db")
     agent = await repo.create(agent_data)
@@ -128,8 +128,8 @@ def usage_patterns_demo():
     
     print("Pattern 2: Repository Factory")
     print("""
-    from agent_system.core.repositories import RepositoryFactory
-    from agent_system.core.events.event_types import EntityType
+    from ..core.repositories import RepositoryFactory
+    from ..core.events.event_types import EntityType
     
     repo = RepositoryFactory.create_repository(
         EntityType.AGENT, 
@@ -139,7 +139,7 @@ def usage_patterns_demo():
     
     print("Pattern 3: Repository Manager (Recommended)")
     print("""
-    from agent_system.core.repositories import RepositoryManager
+    from ..core.repositories import RepositoryManager
     
     manager = RepositoryManager(db_path="/path/to/db")
     agent = await manager.agents.create(agent_data)

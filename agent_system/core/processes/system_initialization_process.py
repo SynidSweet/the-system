@@ -14,7 +14,7 @@ from pathlib import Path
 
 from ..base_process import BaseProcess
 from ..system_interface import SystemInterface
-from agent_system.core.entities import TaskEntity, TaskState
+from ..entities import TaskEntity, TaskState
 
 # Type aliases for backward compatibility
 Task = TaskEntity

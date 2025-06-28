@@ -97,7 +97,10 @@ class SendMessageToUserTool(SystemMCPTool):
             }
             
             # Store in database for persistence
-            from agent_system.config.database import DatabaseManager
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+            from config.database import DatabaseManager
             database = DatabaseManager()
             message_id = await database.user_messages.create(user_message)
             

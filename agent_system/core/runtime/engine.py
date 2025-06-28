@@ -6,13 +6,13 @@ from datetime import datetime
 from dataclasses import dataclass
 import logging
 
-from agent_system.core.runtime.state_machine import TaskState, TaskStateMachine
-from agent_system.core.runtime.dependency_graph import DependencyGraph
-from agent_system.core.runtime.event_handler import RuntimeEventHandler
-from agent_system.core.events.event_manager import EventManager
-from agent_system.core.events.event_types import EventType, EntityType
-from agent_system.core.entities.entity_manager import EntityManager
-from .task import TaskEntity
+from ..runtime.state_machine import TaskState, TaskStateMachine
+from ..runtime.dependency_graph import DependencyGraph
+from ..runtime.event_handler import RuntimeEventHandler
+from ..events.event_manager import EventManager
+from ..events.event_types import EventType, EntityType
+from ..entities.entity_manager import EntityManager
+from ..entities.task import TaskEntity
 
 
 logger = logging.getLogger(__name__)
@@ -276,7 +276,7 @@ class RuntimeEngine:
         """Execute the actual agent call."""
         try:
             # Import here to avoid circular imports
-            from agent_system.core.universal_agent_runtime import UniversalAgentRuntime
+            from ..universal_agent_runtime import UniversalAgentRuntime
             
             # Create and initialize agent
             agent = UniversalAgentRuntime(task_id, self.event_manager)

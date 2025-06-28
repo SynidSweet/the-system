@@ -1,6 +1,6 @@
 # Development Conventions & Code Standards
 
-*Last updated: 2025-06-28 | Updated by: /document command (added file naming standards)*
+*Last updated: 2025-06-28 | Updated by: /document command (updated import patterns)*
 
 ## Overview
 
@@ -10,31 +10,37 @@ This document outlines the coding conventions, design patterns, and development 
 
 ### Import Conventions
 
-#### Entity-Based Architecture Imports
-The system uses entity-based architecture with modular entity managers. Import from the correct modules:
+#### Relative Import Pattern (UPDATED: 2025-06-28)
+**CRITICAL**: The system now uses relative imports exclusively. All absolute imports have been converted to relative imports for proper module resolution.
+
 ```python
-# CORRECT: Entity imports
-from agent_system.core.entities import (
-    TaskEntity, AgentEntity, ToolEntity, ContextEntity,
-    TaskState, EntityManager
-)
+# CORRECT: Relative imports within modules
+# From API module to core:
+from ...core.entities import TaskEntity, AgentEntity, TaskState
+from ...config.database import DatabaseManager
 
-# CORRECT: Type-specific manager imports (NEW: 2025-06-28)
-from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.entities.managers import (
-    AgentManager, TaskManager, ToolManager, 
-    ContextManager, ProcessManager
-)
+# From core entities to events:
+from ..events.event_types import EntityType
+from ..events.event_manager import EventManager
 
-# CORRECT: Event system imports
-from agent_system.core.events.models import Event, ResourceUsage
-from agent_system.core.events import EventManager
+# From managers to entities:
+from ..base import Entity, EntityState
+from ...events.event_types import EntityType
 
-# CORRECT: Database imports
-from agent_system.config.database import DatabaseManager
+# Within same directory:
+from .entity_manager import EntityManager
+from .managers.agent_manager import AgentManager
+```
 
-# Create entity manager instance
+#### Entity-Based Architecture Imports
+The system uses entity-based architecture with modular entity managers:
+```python
+# CORRECT: Entity manager usage (with relative imports)
 entity_manager = EntityManager(db_path, event_manager)
+
+# Access type-specific managers through facade
+agents = await entity_manager.agents.find_by_capability("web_search")
+tasks = await entity_manager.tasks.find_by_status(TaskState.READY_FOR_AGENT)
 ```
 
 #### Legacy Compatibility Pattern
@@ -56,13 +62,27 @@ class MCPToolResult(BaseModel):
     execution_time_ms: Optional[int] = None
 ```
 
-#### Avoid Legacy Imports
+#### Import Pattern Guidelines
 ```python
+# WRONG: Absolute imports (causes module resolution issues)
+from agent_system.core.entities import TaskEntity
+from agent_system.api.main import database
+
+# CORRECT: Relative imports (proper module resolution)
+from ..core.entities import TaskEntity
+from .main import database
+
 # WRONG: Legacy imports (archived/deprecated)
 from .models import Task, Agent, Message  # models.py archived
 from core.database_manager import database  # moved to config.database
-from core.models import MCPToolResult  # create temporary compatibility models
 ```
+
+#### Import Fix Methodology (Reference)
+When converting absolute imports to relative imports:
+1. Calculate module depth from current file to target
+2. Use dots (`.`) to navigate up directory levels
+3. Append remaining module path after dots
+4. Test imports to ensure proper resolution
 
 ### Directory Structure
 ```

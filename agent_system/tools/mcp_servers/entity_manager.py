@@ -4,10 +4,10 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 
-from agent_system.tools.mcp_servers.base import MCPServer, PermissionError
-from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.permissions.manager import DatabasePermissionManager
-from agent_system.core.events.event_types import EntityType
+from ..mcp_servers.base import MCPServer, PermissionError
+from ...core.entities.entity_manager import EntityManager
+from ...core.permissions.manager import DatabasePermissionManager
+from ...core.events.event_types import EntityType
 
 logger = logging.getLogger(__name__)
 

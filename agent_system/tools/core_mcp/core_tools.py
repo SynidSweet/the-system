@@ -1,7 +1,8 @@
 from typing import Dict, Any, Optional
 import json
-from agent_system.core.entities import TaskEntity, TaskState
-from agent_system.core.types import ToolResult, TaskMetadata
+import time
+from ...core.entities import TaskEntity, TaskState
+from ...core.types import ToolResult, TaskMetadata
 from pydantic import BaseModel, Field
 
 # Temporary compatibility models
@@ -14,7 +15,10 @@ class MCPToolResult(BaseModel):
 
 # Type alias for backward compatibility
 TaskStatus = TaskState
-from agent_system.config.database import DatabaseManager
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+from config.database import DatabaseManager
 
 # Create global database instance
 database = DatabaseManager()
@@ -435,27 +439,123 @@ class EndTaskTool(CoreMCPTool):
         result = kwargs.get("result")
         summary = kwargs.get("summary", "")
         lessons_learned = kwargs.get("lessons_learned", "")
+        current_task_id = kwargs.get("_current_task_id")
         
-        # TODO: Implement actual task completion logic
-        # This should:
-        # 1. Update task status in database
-        # 2. Trigger evaluator agent
-        # 3. Trigger documentation agent
-        # 4. Create summary for parent agent
+        # Validate required parameters
+        if not status:
+            return MCPToolResult(
+                success=False,
+                error_message="Status is required (success or failure)"
+            )
         
-        task_status = TaskStatus.COMPLETE if status == "success" else TaskStatus.FAILED
+        if not result:
+            return MCPToolResult(
+                success=False,
+                error_message="Result description is required"
+            )
         
-        return MCPToolResult(
-            success=True,
-            result=f"Task marked as {status}: {result[:100]}...",
-            metadata={
-                "tool_name": "end_task",
-                "task_status": task_status.value,
+        if not current_task_id:
+            return MCPToolResult(
+                success=False,
+                error_message="Task context not available (_current_task_id missing)"
+            )
+        
+        try:
+            # 1. Update task status in database
+            current_task = await database.tasks.get_by_id(current_task_id)
+            if not current_task:
+                return MCPToolResult(
+                    success=False,
+                    error_message=f"Current task {current_task_id} not found"
+                )
+            
+            task_status = TaskStatus.COMPLETED if status == "success" else TaskStatus.FAILED
+            
+            # Update task with completion data
+            updated_task = {
+                **current_task.__dict__,
+                "task_state": task_status,
+                "result": result,
                 "summary": summary,
                 "lessons_learned": lessons_learned,
-                "action": "complete_task"
+                "completed_at": time.time()
             }
-        )
+            
+            await database.tasks.update(current_task_id, updated_task)
+            
+            # 2. Trigger evaluator agent for quality assessment
+            evaluator_subtask = {
+                "name": f"Evaluate task {current_task_id}",
+                "parent_task_id": current_task_id,
+                "tree_id": current_task.tree_id,
+                "task_state": TaskStatus.READY_FOR_AGENT,
+                "instruction": f"Evaluate completed task: {current_task.instruction}\n\nResult: {result}\nSummary: {summary}\nLessons: {lessons_learned}",
+                "priority": current_task.priority + 1,  # Higher priority for evaluation
+                "agent_type": "task_evaluator",
+                "created_at": time.time()
+            }
+            
+            evaluator_task_id = await database.tasks.create(evaluator_subtask)
+            
+            # 3. Trigger documentation agent for knowledge capture
+            doc_subtask = {
+                "name": f"Document task {current_task_id}",
+                "parent_task_id": current_task_id,
+                "tree_id": current_task.tree_id,
+                "task_state": TaskStatus.READY_FOR_AGENT,
+                "instruction": f"Document insights from completed task: {current_task.instruction}\n\nResult: {result}\nSummary: {summary}\nLessons: {lessons_learned}",
+                "priority": current_task.priority + 1,  # Higher priority for documentation
+                "agent_type": "documentation_agent",
+                "created_at": time.time()
+            }
+            
+            doc_task_id = await database.tasks.create(doc_subtask)
+            
+            # 4. Create summary for parent agent if this task has a parent
+            parent_summary_tasks = []
+            if current_task.parent_task_id:
+                summary_subtask = {
+                    "name": f"Summarize subtask {current_task_id} for parent",
+                    "parent_task_id": current_task.parent_task_id,
+                    "tree_id": current_task.tree_id,
+                    "task_state": TaskStatus.READY_FOR_AGENT,
+                    "instruction": f"Create summary of completed subtask for parent task:\n\nCompleted: {current_task.instruction}\nResult: {result}\nSummary: {summary}\nStatus: {status}",
+                    "priority": current_task.priority,  # Same priority as original task
+                    "agent_type": "summary_agent",
+                    "created_at": time.time()
+                }
+                
+                summary_task_id = await database.tasks.create(summary_subtask)
+                parent_summary_tasks.append(summary_task_id)
+            
+            return MCPToolResult(
+                success=True,
+                result=f"Task {current_task_id} marked as {status} with full completion workflow triggered",
+                metadata={
+                    "tool_name": "end_task",
+                    "task_id": current_task_id,
+                    "task_status": task_status.value,
+                    "summary": summary,
+                    "lessons_learned": lessons_learned,
+                    "action": "complete_task",
+                    "triggered_tasks": {
+                        "evaluator_task_id": evaluator_task_id,
+                        "documentation_task_id": doc_task_id,
+                        "parent_summary_tasks": parent_summary_tasks
+                    }
+                }
+            )
+            
+        except Exception as e:
+            return MCPToolResult(
+                success=False,
+                error_message=f"Failed to complete task: {str(e)}",
+                metadata={
+                    "tool_name": "end_task",
+                    "error_type": type(e).__name__,
+                    "task_id": current_task_id
+                }
+            )
 
 
 class FlagForReviewTool(CoreMCPTool):

@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config.database import db_manager
-from agent_system.config.database import DatabaseManager
+from ..config.database import DatabaseManager
 
 # Create global database instance
 database = DatabaseManager()
@@ -47,7 +47,7 @@ async def seed_minimal_agents():
     """Seed ONLY the agent_selector - everything else built by agents"""
     print("🤖 Seeding minimal agent (agent_selector only)...")
     
-    from agent_system.core.entities import AgentEntity
+    from ..core.entities import AgentEntity
     from pydantic import BaseModel
     from typing import Optional
     
@@ -123,7 +123,7 @@ async def seed_minimal_context():
     """Seed minimal context - just system overview"""
     print("📚 Seeding minimal context...")
     
-    from agent_system.core.entities import ContextEntity
+    from ..core.entities import ContextEntity
     
     # Type alias for backward compatibility
     ContextDocument = ContextEntity

@@ -1,5 +1,7 @@
 # Tool System Quick Reference
 
+*Last updated: 2025-06-28 | Updated by: /document command*
+
 ## Overview
 The MVP implements a sophisticated optional tooling system where agents start with minimal tools and can request additional capabilities as needed.
 
@@ -24,6 +26,19 @@ The MVP implements a sophisticated optional tooling system where agents start wi
 - **sql_lite** - Database analysis queries
 - **terminal** - System command execution
 - **github** - Version control operations
+
+### 4. Core MCP Tools (Enhanced 2025-06-28)
+- **break_down_task** - Recursive task decomposition
+- **create_subtask** - Agent spawning and task creation
+- **end_task** - ✨ **ENHANCED**: Complete task lifecycle management with automatic agent orchestration
+- **need_more_context** - Knowledge expansion requests
+- **need_more_tools** - Dynamic capability discovery
+
+**Key Enhancement**: The `end_task` tool now provides comprehensive workflow orchestration:
+- Database status updates with completion metadata
+- Automatic triggering of `task_evaluator`, `documentation_agent`, and `summary_agent`
+- Robust error handling and validation
+- Full task hierarchy and context preservation
 
 ## Tool Assignment Flow
 

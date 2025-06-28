@@ -3,11 +3,11 @@
 import logging
 from typing import Dict, Any, TYPE_CHECKING
 
-from agent_system.core.runtime.state_machine import TaskState
-from agent_system.core.events.event_types import EventType, EntityType
+from ..runtime.state_machine import TaskState
+from ..events.event_types import EventType, EntityType
 
 if TYPE_CHECKING:
-    from agent_system.core.runtime.engine import RuntimeEngine, RuntimeEvent
+    from ..runtime.engine import RuntimeEngine, RuntimeEvent
 
 
 logger = logging.getLogger(__name__)

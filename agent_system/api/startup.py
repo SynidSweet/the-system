@@ -6,9 +6,9 @@ from typing import Optional
 
 from fastapi import FastAPI
 
-from agent_system.config.database import DatabaseManager
-from agent_system.core.event_integration import event_integration
-from agent_system.core.runtime.runtime_integration import initialize_runtime_integration, RuntimeIntegration
+from ..config.database import DatabaseManager
+from ..core.event_integration import event_integration
+from ..core.runtime.runtime_integration import initialize_runtime_integration, RuntimeIntegration
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ async def startup_sequence():
     
     # Initialize database
     print("🔄 Initializing Database...")
-    await database.initialize()
+    await database.connect()
     print("✅ Database initialized")
     
     # Initialize event system integration
@@ -62,8 +62,7 @@ async def startup_sequence():
     # Initialize entity system (Phase 3)
     print("🔄 Initializing Entity Management Layer...")
     from core.entities.entity_manager import EntityManager
-    entity_manager = EntityManager()
-    await entity_manager.initialize()
+    entity_manager = EntityManager(database.db_url, event_integration.event_manager)
     print("✅ Entity system initialized")
     
     # Initialize runtime system (Phase 4)
@@ -141,7 +140,7 @@ async def shutdown_sequence():
     try:
         print("🔄 Shutting down database...")
         database = get_database()
-        await database.close()
+        await database.disconnect()
         print("✅ Database shutdown complete")
     except Exception as e:
         logger.error(f"Error shutting down database: {e}")
@@ -152,5 +151,5 @@ async def shutdown_sequence():
 def get_database() -> DatabaseManager:
     """Get the global database manager instance."""
     # Import here to avoid circular imports
-    from agent_system.api.main import database
+    from .main import database
     return database

@@ -3,8 +3,8 @@
 from typing import Dict, Any, Optional
 import logging
 
-from agent_system.core.processes.base_process import BaseProcess, ProcessResult
-from agent_system.core.runtime.state_machine import TaskState
+from ..base_process import BaseProcess, ProcessResult
+from ...runtime.state_machine import TaskState
 
 
 logger = logging.getLogger(__name__)

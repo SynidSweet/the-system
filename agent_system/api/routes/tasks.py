@@ -7,9 +7,12 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
-from agent_system.core.entities import TaskEntity, TaskState
-from agent_system.config.database import DatabaseManager
-from agent_system.api.exceptions import (
+from ...core.entities import TaskEntity, TaskState
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+from config.database import DatabaseManager
+from ..exceptions import (
     EntityNotFoundError, 
     ValidationError, 
     RuntimeError as AgentRuntimeError
@@ -37,19 +40,19 @@ TaskStatus = TaskState
 # Dependencies
 def get_database():
     """Get database instance"""
-    from agent_system.api.main import database
+    from ..main import database
     return database
 
 
 def get_runtime_integration():
     """Get runtime integration instance"""
-    from agent_system.api.startup import get_runtime_integration as _get_runtime
+    from ..startup import get_runtime_integration as _get_runtime
     return _get_runtime()
 
 
 def get_websocket_manager():
     """Get WebSocket connection manager"""
-    from agent_system.api.websocket.handlers import manager
+    from ..websocket.handlers import manager
     return manager
 
 

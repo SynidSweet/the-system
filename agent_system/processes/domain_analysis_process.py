@@ -7,7 +7,7 @@ domain analysis phase to identify what systematic frameworks are needed.
 
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from agent_system.core.entities import TaskEntity, TaskState
+from ..core.entities import TaskEntity, TaskState
 
 # Type alias for backward compatibility
 Task = TaskEntity

@@ -4,10 +4,10 @@ from typing import Dict, List, Optional, Any
 import json
 import aiosqlite
 
-from agent_system.core.entities.base import Entity
-from .process import ProcessEntity, ProcessType
-from agent_system.core.events.event_types import EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..base import Entity
+from ..process import ProcessEntity, ProcessType
+from ...events.event_types import EntityType
+from ...events.event_manager import EventManager
 from .base_manager import BaseManager
 
 

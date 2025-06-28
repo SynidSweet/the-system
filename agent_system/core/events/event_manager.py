@@ -11,10 +11,19 @@ from contextlib import asynccontextmanager
 
 from .event_types import EventType, EventOutcome, EntityType, CounterType
 from .models import Event, ResourceUsage, ReviewCounter
-from agent_system.config.database import DatabaseManager
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-# Create global database instance
-database = DatabaseManager()
+# Lazy import to avoid dependency issues during module loading
+database = None
+
+def get_database():
+    global database
+    if database is None:
+        from config.database import DatabaseManager
+        database = DatabaseManager()
+    return database
 
 
 class EventManager:
@@ -106,7 +115,7 @@ class EventManager:
         # Add related entities from database if not provided
         if not event.related_entities and event.primary_entity_type == EntityType.TASK:
             try:
-                task = await database.tasks.get_by_id(event.primary_entity_id)
+                task = await get_database().tasks.get_by_id(event.primary_entity_id)
                 if task:
                     event.related_entities['agent'] = [task.agent_id]
                     if task.parent_task_id:
@@ -169,7 +178,7 @@ class EventManager:
             json.dumps(event.metadata)
         )
         
-        return await database.execute_command(query, params)
+        return await get_database().execute_command(query, params)
     
     async def _update_review_counters(self, event: Event):
         """Update rolling review counters based on event"""
@@ -207,7 +216,7 @@ class EventManager:
         """
         params = (entity_type.value, entity_id, counter_type.value)
         
-        results = await database.execute_query(query, params)
+        results = await get_database().execute_query(query, params)
         
         if results:
             # Update existing counter
@@ -223,7 +232,7 @@ class EventManager:
                 SET count = 0, last_review_at = ?
                 WHERE entity_type = ? AND entity_id = ? AND counter_type = ?
                 """
-                await database.execute_command(
+                await get_database().execute_command(
                     update_query,
                     (datetime.utcnow(), entity_type.value, entity_id, counter_type.value)
                 )
@@ -235,7 +244,7 @@ class EventManager:
                 SET count = count + ?
                 WHERE entity_type = ? AND entity_id = ? AND counter_type = ?
                 """
-                await database.execute_command(
+                await get_database().execute_command(
                     update_query,
                     (increment, entity_type.value, entity_id, counter_type.value)
                 )
@@ -296,7 +305,7 @@ class EventManager:
             one_hour_ago
         )
         
-        results = await database.execute_query(query, params)
+        results = await get_database().execute_query(query, params)
         
         if results and results[0]['failure_count'] >= 3:
             # Log optimization opportunity
@@ -331,7 +340,7 @@ class EventManager:
             datetime.fromtimestamp(event.timestamp)
         )
         
-        results = await database.execute_query(query, params)
+        results = await get_database().execute_query(query, params)
         
         if results and results[0]['avg_duration']:
             avg_duration = results[0]['avg_duration']
@@ -368,7 +377,7 @@ class EventManager:
             created_by_event_id
         )
         
-        await database.execute_command(query, params)
+        await get_database().execute_command(query, params)
     
     async def flush(self):
         """Force flush of event buffer"""
@@ -404,7 +413,7 @@ class EventManager:
         
         query += " ORDER BY timestamp DESC"
         
-        return await database.execute_query(query, tuple(params))
+        return await get_database().execute_query(query, tuple(params))
     
     async def get_event_chain(self, root_event_id: int) -> List[Dict[str, Any]]:
         """Get complete event chain from root event"""
@@ -419,7 +428,7 @@ class EventManager:
             
             # Get event
             query = "SELECT * FROM events WHERE id = ?"
-            results = await database.execute_query(query, (event_id,))
+            results = await get_database().execute_query(query, (event_id,))
             
             if results:
                 event = results[0]

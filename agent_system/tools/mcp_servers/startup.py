@@ -4,16 +4,16 @@ import asyncio
 import logging
 from typing import Dict, List, Optional, Any
 
-from agent_system.core.database_manager import DatabaseManager
-from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.permissions.manager import DatabasePermissionManager, get_permission_manager
-from agent_system.tools.mcp_servers.base import get_mcp_registry, MCPServerRegistry
-from agent_system.tools.mcp_servers.entity_manager import EntityManagerMCP
-from agent_system.tools.mcp_servers.message_user import MessageUserMCP, UserInterface
-from agent_system.tools.mcp_servers.file_system import FileSystemMCPServer
-from agent_system.tools.mcp_servers.sql_lite import SQLiteMCPServer
-from agent_system.tools.mcp_servers.terminal import TerminalMCPServer
-from agent_system.tools.mcp_servers.github import GitHubMCPServer
+from ...core.database_manager import DatabaseManager
+from ...core.entities.entity_manager import EntityManager
+from ...core.permissions.manager import DatabasePermissionManager, get_permission_manager
+from ..mcp_servers.base import get_mcp_registry, MCPServerRegistry
+from ..mcp_servers.entity_manager import EntityManagerMCP
+from ..mcp_servers.message_user import MessageUserMCP, UserInterface
+from ..mcp_servers.file_system import FileSystemMCPServer
+from ..mcp_servers.sql_lite import SQLiteMCPServer
+from ..mcp_servers.terminal import TerminalMCPServer
+from ..mcp_servers.github import GitHubMCPServer
 
 logger = logging.getLogger(__name__)
 

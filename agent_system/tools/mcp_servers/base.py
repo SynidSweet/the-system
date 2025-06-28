@@ -7,7 +7,7 @@ from typing import Dict, Any, List, Callable, Optional
 from abc import ABC, abstractmethod
 import time
 
-from agent_system.core.permissions.manager import DatabasePermissionManager
+from ...core.permissions.manager import DatabasePermissionManager
 
 logger = logging.getLogger(__name__)
 

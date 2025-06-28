@@ -6,8 +6,8 @@ from typing import List
 
 from fastapi import WebSocket, WebSocketDisconnect
 
-from agent_system.core.websocket_messages import WebSocketMessage
-from agent_system.core.runtime.state_machine import TaskState
+from ...core.websocket_messages import WebSocketMessage
+from ...core.runtime.state_machine import TaskState
 
 
 logger = logging.getLogger(__name__)
@@ -135,7 +135,7 @@ async def handle_continue_step_command(command: dict, websocket: WebSocket):
     
     try:
         # Get runtime integration
-        from agent_system.api.main import runtime_integration
+        from ..main import runtime_integration
         
         if runtime_integration and runtime_integration.runtime_engine:
             await runtime_integration.runtime_engine.update_task_state(

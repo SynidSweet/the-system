@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from agent_system.tools.mcp_servers.base import MCPServer
-from agent_system.core.permissions.manager import DatabasePermissionManager
+from ..mcp_servers.base import MCPServer
+from ...core.permissions.manager import DatabasePermissionManager
 
 
 class GitHubMCPServer(MCPServer):

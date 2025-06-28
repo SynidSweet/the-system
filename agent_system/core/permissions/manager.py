@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import logging
 from datetime import datetime, timedelta
 
-from agent_system.core.database_manager import DatabaseManager
+from ..database_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 

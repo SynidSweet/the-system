@@ -11,6 +11,7 @@ The core module contains the fundamental system logic for The System's process-f
 - **processes/**: Process framework definitions and task execution patterns
 - **knowledge/**: Context assembly engine and knowledge gap detection
 - **events/**: Comprehensive event tracking and system optimization
+  - **analyzers/**: Modular event analysis components (pattern, performance, success, optimization)
 - **runtime/**: State machine and dependency management for agent execution
 - **types.py**: Comprehensive TypedDict library for type safety
 - **ai_models.py**: AI model integration and configuration management
@@ -45,6 +46,17 @@ The core module contains the fundamental system logic for The System's process-f
 3. Test knowledge assembly with context engine
 4. Validate knowledge completeness for task success
 5. Monitor knowledge usage and effectiveness
+
+### Working with Event Analyzers
+1. Import specific analyzer from `events/analyzers/`
+2. Each analyzer specializes in different analysis aspects:
+   - `EventPatternAnalyzer`: Detect patterns and anomalies
+   - `SuccessPatternDetector`: Identify success patterns
+   - `EventPerformanceAnalyzer`: Analyze performance metrics
+   - `OptimizationDetector`: Find optimization opportunities
+3. For backward compatibility, use `event_analyzer` module
+4. Analyzers operate independently without shared state
+5. All analyzers return structured result objects
 
 ## Architecture & Patterns
 

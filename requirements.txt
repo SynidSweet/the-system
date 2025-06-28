@@ -1,0 +1,32 @@
+# Python dependencies for The System
+fastapi>=0.115.14
+uvicorn>=0.35.0
+websockets>=15.0.1
+sqlmodel>=0.0.24
+pydantic>=2.11.7
+pydantic-settings>=2.10.1
+aiosqlite>=0.21.0
+asyncio-mqtt>=0.16.2
+cryptography>=45.0.4
+python-dotenv>=1.1.1
+authlib>=1.6.0
+google-auth>=2.40.3
+google-auth-oauthlib>=1.2.2
+gitpython>=3.1.44
+anthropic>=0.55.0
+openai>=1.93.0
+google-generativeai>=0.8.5
+psutil>=7.0.0
+aiofiles>=24.1.0
+aiohttp>=3.12.13
+pytest>=8.4.1
+pytest-asyncio>=1.0.0
+PyYAML>=6.0.2
+
+# Official MCP Python SDK
+mcp>=1.0.0
+
+# Additional MCP integrations (optional)
+# fastmcp>=2.0.0  # Enhanced MCP framework
+# shell-command-mcp  # Shell command execution
+# github-mcp-server  # GitHub integration

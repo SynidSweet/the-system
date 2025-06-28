@@ -27,15 +27,15 @@ import uvicorn
 from agent_system.config.database import DatabaseManager
 
 # Import modular components
-from agent_system.api.startup import lifespan, get_runtime_integration
-from agent_system.api.websocket.handlers import manager, websocket_endpoint
-from agent_system.api.routes import tasks, entities, admin
+from .startup import lifespan, get_runtime_integration
+from .websocket.handlers import manager, websocket_endpoint
+from .routes import tasks, entities, admin
 
 # Import exception handling middleware
-from agent_system.api.middleware.exception_handler import ExceptionHandlerMiddleware
+from .middleware.exception_handler import ExceptionHandlerMiddleware
 
 # Import temporary compatibility models
-from agent_system.api.routes.tasks import TaskStatus
+from .routes.tasks import TaskStatus
 
 
 # Create global database instance

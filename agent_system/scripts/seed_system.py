@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config.database import db_manager
-from agent_system.config.database import DatabaseManager
+from ..config.database import DatabaseManager
 from scripts.seeders import SystemSeeder, load_configuration
 
 # Create global database instance

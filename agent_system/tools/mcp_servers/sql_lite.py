@@ -14,8 +14,8 @@ from typing import Dict, Any, List, Optional, Union
 from datetime import datetime
 from pathlib import Path
 
-from agent_system.tools.mcp_servers.base import MCPServer
-from agent_system.core.permissions.manager import DatabasePermissionManager
+from ..mcp_servers.base import MCPServer
+from ...core.permissions.manager import DatabasePermissionManager
 
 
 class SQLiteMCPServer(MCPServer):

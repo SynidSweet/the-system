@@ -38,7 +38,7 @@ class AgentSeeder(BaseSeeder):
         print("🤖 Seeding agents from configuration...")
         
         try:
-            from agent_system.core.entities import AgentEntity
+            from ...core.entities import AgentEntity
             
             agents_added = 0
             agents_skipped = 0
@@ -85,7 +85,7 @@ class ToolSeeder(BaseSeeder):
         print("🔧 Seeding tools from configuration...")
         
         try:
-            from agent_system.core.entities import ToolEntity
+            from ...core.entities import ToolEntity
             from tools.base_tool import tool_registry
             from tools.core_mcp.core_tools import register_core_tools
             from tools.system_tools.mcp_integrations import register_system_tools
@@ -153,7 +153,7 @@ class DocumentSeeder(BaseSeeder):
         print("📚 Seeding documents from configuration...")
         
         try:
-            from agent_system.core.entities import ContextEntity
+            from ...core.entities import ContextEntity
             
             docs_added = 0
             docs_skipped = 0

@@ -3,8 +3,8 @@
 from typing import Dict, Type, TypeVar, Optional
 from enum import Enum
 
-from agent_system.core.events.event_types import EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..events.event_types import EntityType
+from ..events.event_manager import EventManager
 from .repository_interface import Repository
 from .agent_repository import AgentRepository
 from .task_repository import TaskRepository

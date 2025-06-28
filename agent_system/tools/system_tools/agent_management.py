@@ -3,7 +3,7 @@ Agent management tools for creating and modifying agents.
 """
 
 from typing import Dict, Any, List, Optional
-from agent_system.core.entities import AgentEntity, ToolEntity
+from ...core.entities import AgentEntity, ToolEntity
 from pydantic import BaseModel, Field
 from typing import Dict, Any
 
@@ -18,7 +18,10 @@ class MCPToolResult(BaseModel):
 # Type aliases for backward compatibility
 Agent = AgentEntity
 Tool = ToolEntity
-from agent_system.config.database import DatabaseManager
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
+from config.database import DatabaseManager
 
 # Create global database instance
 database = DatabaseManager()

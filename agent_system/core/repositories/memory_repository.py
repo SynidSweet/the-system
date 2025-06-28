@@ -4,9 +4,9 @@ from typing import Dict, List, Optional, Any, TypeVar
 from datetime import datetime
 import copy
 
-from agent_system.core.entities.base import Entity, EntityState
-from agent_system.core.events.event_types import EntityType, EventType
-from agent_system.core.events.event_manager import EventManager
+from ..entities.base import Entity, EntityState
+from ..events.event_types import EntityType, EventType
+from ..events.event_manager import EventManager
 from .repository_interface import Repository
 
 T = TypeVar('T', bound=Entity)

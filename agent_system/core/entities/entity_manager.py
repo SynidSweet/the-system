@@ -2,15 +2,15 @@
 
 from typing import Dict, List, Optional, Any, Type, Union
 
-from agent_system.core.entities.base import Entity, EntityState
+from .base import Entity, EntityState
 from .agent import AgentEntity
 from .task import TaskEntity
 from .tool import ToolEntity
 from .context import ContextEntity
 from .process import ProcessEntity
 from .event import EventEntity
-from agent_system.core.events.event_types import EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..events.event_types import EntityType
+from ..events.event_manager import EventManager
 
 from .managers.agent_manager import AgentManager
 from .managers.task_manager import TaskManager

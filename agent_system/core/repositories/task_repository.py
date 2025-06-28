@@ -4,8 +4,8 @@ from typing import Dict, List, Optional, Any
 import json
 
 from .task import TaskEntity
-from agent_system.core.events.event_types import EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..events.event_types import EntityType
+from ..events.event_manager import EventManager
 from .base_repository import BaseRepository
 
 

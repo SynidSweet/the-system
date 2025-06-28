@@ -221,6 +221,31 @@ When implementing new features:
 
 The knowledge system ensures every task has the context needed for isolated success!
 
+## Testing Infrastructure
+
+The system includes a comprehensive modular test architecture:
+
+### Running Tests
+```bash
+# Run all test suites
+python -m tests.system.test_runner
+
+# Run specific test suite
+python -m tests.system.test_runner --suite health
+python -m tests.system.test_runner --suite functional
+python -m tests.system.test_runner --suite performance
+python -m tests.system.test_runner --suite integration
+```
+
+### Test Architecture
+- **Modular Design**: 6 focused test modules, each under 300 lines
+- **70%+ Code Reduction**: Shared utilities eliminate duplication
+- **Automatic Reporting**: JSON reports with detailed metrics
+- **Performance Validation**: Threshold-based benchmarking
+- **Comprehensive Coverage**: Health, functional, performance, and integration tests
+
+See `/docs/development/testing.md` for detailed testing documentation.
+
 ## Module-Specific Documentation
 
 For detailed module documentation, see the CLAUDE.md files in each major directory:
