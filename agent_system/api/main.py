@@ -25,9 +25,11 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import uvicorn
 import json
+import logging
 from typing import Optional
+from datetime import datetime
 
-from core.models import TaskSubmission, TaskResponse, TaskStatus
+from api.models import TaskSubmission, TaskResponse, TaskStatus
 from core.database_manager import database
 from core.websocket_messages import WebSocketMessage, MessageType
 from core.event_integration import event_integration
@@ -47,14 +49,139 @@ async def lifespan(app: FastAPI):
     # Initialize database
     await database.initialize()
     
+    # Create basic schema if tables don't exist
+    try:
+        # Test if agents table exists
+        await database.execute_query("SELECT 1 FROM agents LIMIT 1")
+    except:
+        # Tables don't exist, create them with full entity-based schema
+        print("📋 Creating database schema...")
+        
+        # Read and execute the init schema
+        from pathlib import Path
+        schema_path = Path(__file__).parent.parent / "init_schema.sql"
+        if schema_path.exists():
+            schema_sql = schema_path.read_text()
+            from config.database import db_manager
+            await db_manager.execute_script(schema_sql)
+            print("✅ Database schema created from init_schema.sql")
+        else:
+            # Fallback: create minimal schema if init_schema.sql not found
+            print("⚠️  init_schema.sql not found, creating minimal schema")
+            await database.execute_command("""
+                CREATE TABLE IF NOT EXISTS entities (
+                    entity_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    entity_type TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    state TEXT DEFAULT 'active',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    metadata TEXT
+                )
+            """)
+            
+            await database.execute_command("""
+                CREATE TABLE IF NOT EXISTS agents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    instruction TEXT,
+                    context_documents TEXT DEFAULT '[]',
+                    available_tools TEXT DEFAULT '[]',
+                    permissions TEXT DEFAULT '[]',
+                    constraints TEXT DEFAULT '[]',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            # Create other required tables
+            await database.execute_command("""
+                CREATE TABLE IF NOT EXISTS tasks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    parent_task_id INTEGER,
+                    tree_id INTEGER,
+                    agent_id INTEGER,
+                    instruction TEXT,
+                    status TEXT DEFAULT 'created',
+                    result TEXT DEFAULT '{}',
+                    metadata TEXT DEFAULT '{}',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            await database.execute_command("""
+                CREATE TABLE IF NOT EXISTS messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    task_id INTEGER,
+                    message_type TEXT,
+                    content TEXT,
+                    metadata TEXT DEFAULT '{}',
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            await database.execute_command("""
+                CREATE TABLE IF NOT EXISTS events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    event_type TEXT NOT NULL,
+                    source TEXT,
+                    target TEXT,
+                    data TEXT DEFAULT '{}',
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            await database.execute_command("""
+                CREATE TABLE IF NOT EXISTS processes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    description TEXT,
+                    type TEXT,
+                    config TEXT DEFAULT '{}',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            await database.execute_command("""
+                CREATE TABLE IF NOT EXISTS context_documents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    title TEXT,
+                    category TEXT DEFAULT 'general',
+                    content TEXT,
+                    format TEXT DEFAULT 'markdown',
+                    version TEXT DEFAULT '1.0.0'
+                )
+            """)
+            
+            await database.execute_command("""
+                CREATE TABLE IF NOT EXISTS tools (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    description TEXT,
+                    category TEXT DEFAULT 'system',
+                    implementation TEXT,
+                    parameters TEXT DEFAULT '{}',
+                    permissions TEXT DEFAULT '[]',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            print("✅ Minimal database schema created")
+    
     # Initialize event system integration
     await event_integration.initialize()
     
     # Initialize entity system (Phase 3)
     print("🔄 Initializing Entity Management Layer...")
     from core.entities.entity_manager import EntityManager
-    entity_manager = EntityManager()
-    await entity_manager.initialize()
+    entity_manager = EntityManager(
+        db_path="data/agent_system.db",
+        event_manager=event_integration.event_manager
+    )
     print("✅ Entity system initialized")
     
     # Initialize runtime system (Phase 4)
@@ -75,7 +202,7 @@ async def lifespan(app: FastAPI):
         db_manager=database,
         entity_manager=entity_manager,
         config={
-            "allowed_file_paths": ["/code/personal/the-system"],
+            "allowed_file_paths": ["/home/ubuntu/system.petter.ai"],
             "github": {},
             "user_interface": {}
         }
@@ -108,7 +235,7 @@ async def lifespan(app: FastAPI):
         await runtime_integration.shutdown()
     
     await event_integration.shutdown()
-    await database.close()
+    await database.disconnect()
     print("✅ Shutdown complete")
 
 
@@ -205,15 +332,20 @@ async def health_check():
         # Check database
         agents = await database.agents.get_all_active()
         
-        # Check task manager
-        stats = task_manager.get_stats()
+        # Check runtime integration if available
+        runtime_stats = {}
+        runtime = get_runtime_integration()
+        if runtime:
+            runtime_stats = {
+                "processes_registered": len(runtime.process_registry.processes) if runtime.process_registry else 0
+            }
         
         return {
             "status": "healthy",
             "database": "connected",
             "active_agents": len(agents),
-            "task_manager": stats,
-            "timestamp": "2024-01-01T00:00:00Z"  # Will be dynamic in production
+            "runtime": runtime_stats,
+            "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
@@ -229,13 +361,24 @@ async def submit_task(submission: TaskSubmission):
             raise RuntimeError("Runtime integration not initialized")
         
         # Create task using the runtime engine
-        task_id = await runtime_integration.create_task(
-            instruction=submission.instruction,
-            parent_task_id=None,
-            agent_type=submission.agent_type,
-            priority=submission.priority,
-            max_execution_time=submission.max_execution_time
-        )
+        # Filter out parameters that TaskEntity doesn't accept
+        task_params = {
+            "instruction": submission.instruction,
+            "parent_task_id": None,
+            "priority": f"priority_{submission.priority}" if submission.priority else "normal",
+        }
+        
+        # Add metadata with agent_type and max_execution_time if provided
+        metadata = submission.metadata or {}
+        if submission.agent_type:
+            metadata["requested_agent_type"] = submission.agent_type
+        if submission.max_execution_time:
+            metadata["max_execution_time"] = submission.max_execution_time
+        
+        if metadata:
+            task_params["metadata"] = metadata
+        
+        task_id = await runtime_integration.create_task(**task_params)
         
         # Get task details for response
         task = await database.tasks.get_by_id(task_id)
@@ -246,14 +389,17 @@ async def submit_task(submission: TaskSubmission):
         await manager.broadcast(json.dumps({
             "type": "task_created",
             "task_id": task_id,
-            "tree_id": task.tree_id
+            "tree_id": task.get("tree_id", task_id)  # Use task_id as tree_id if not set
         }))
         
         return TaskResponse(
-            task_id=task_id,
-            tree_id=task.tree_id,
-            status=task.status,
-            created_at=task.created_at
+            task_id=str(task_id),
+            tree_id=str(task.get("tree_id", task_id)),
+            status=TaskStatus(task.get("status", "created")),
+            created_at=datetime.fromisoformat(task.get("created_at", datetime.now().isoformat())),
+            instruction=submission.instruction,
+            agent_type=submission.agent_type,
+            metadata=submission.metadata
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -276,7 +422,7 @@ async def get_active_tasks():
                     "started_at": task.created_at,
                     "status": "active"
                 }
-            trees[task.tree_id]["tasks"].append(task.model_dump())
+            trees[task.tree_id]["tasks"].append(task)
         
         return {"active_trees": list(trees.values())}
     except Exception as e:
@@ -293,15 +439,26 @@ async def get_all_task_trees():
         # For each root task, get the full tree
         trees = []
         for root_task in all_tasks:
-            # Get all tasks in this tree
-            tree_tasks = await database.tasks.get_by_tree_id(root_task.tree_id)
+            # Get all tasks in this tree (root_task is a dict)
+            tree_id = root_task.get("tree_id", root_task.get("id"))
+            tree_tasks = await database.tasks.get_by_tree_id(str(tree_id))
+            
+            # Calculate tree metadata
+            has_running_tasks = any(task.get("status") in ["running", "agent_responding", "waiting_on_dependencies"] for task in tree_tasks)
+            has_completed_tasks = any(task.get("status") in ["completed", "failed"] for task in tree_tasks)
             
             # Build tree structure
             tree = {
-                "tree_id": root_task.tree_id,
-                "tasks": [task.model_dump() for task in tree_tasks],
-                "started_at": root_task.created_at.isoformat() if root_task.created_at else None,
-                "status": root_task.status.value if hasattr(root_task.status, 'value') else root_task.status
+                "tree_id": tree_id,
+                "tasks": tree_tasks,  # Already dicts from database
+                "started_at": None,  # Tasks table doesn't have created_at column
+                "created_at": "2025-06-25T20:00:00",  # Default timestamp for display
+                "status": root_task.get("status"),
+                "has_running_tasks": has_running_tasks,
+                "has_completed_tasks": has_completed_tasks,
+                "task_count": len(tree_tasks),
+                "instruction": root_task.get("instruction", ""),
+                "root_instruction": root_task.get("instruction", "No instruction")
             }
             trees.append(tree)
         
@@ -317,7 +474,7 @@ async def get_task_tree(tree_id: int):
         tasks = await database.tasks.get_by_tree_id(tree_id)
         
         # Build hierarchical structure
-        task_dict = {task.id: task.model_dump() for task in tasks}
+        task_dict = {task.get('id'): task for task in tasks}
         
         # Add children to each task
         for task in tasks:
@@ -339,62 +496,87 @@ async def get_task_tree(tree_id: int):
 async def get_tree_messages(tree_id: int):
     """Get all messages for a task tree"""
     try:
-        # Get all tasks in the tree
-        tree_tasks = await database.tasks.get_by_tree_id(tree_id)
-        task_ids = [task.id for task in tree_tasks]
+        # Get all tasks in the tree (returns list of dicts)
+        tree_tasks = await database.tasks.get_by_tree_id(str(tree_id))
+        task_ids = [task.get("id") for task in tree_tasks if task.get("id")]
         
         # Get all messages for these tasks
         messages = []
         for task_id in task_ids:
-            task_messages = await database.messages.get_by_task_id(task_id)
+            task_messages = await database.messages.get_by_task_id(str(task_id))
             for msg in task_messages:
-                # Get task info for agent name
-                task = next((t for t in tree_tasks if t.id == task_id), None)
+                # Get task info for agent name (msg is a dict)
+                task = next((t for t in tree_tasks if t.get("id") == task_id), None)
                 agent_name = "Unknown"
-                if task:
-                    agent = await database.agents.get_by_id(task.agent_id)
+                if task and task.get("agent_id"):
+                    agent = await database.agents.get_by_id(str(task.get("agent_id")))
                     if agent:
-                        agent_name = agent.name
+                        agent_name = agent.get("name", "Unknown")
                 
                 # Convert to WebSocket message format based on message type
-                msg_type = msg.message_type.value.lower()
+                msg_type = msg.get("message_type", "").lower()
                 
                 # Build content based on message type
                 content = {}
-                if msg_type == "system_event" and msg.content.startswith("Starting task execution:"):
+                msg_content = msg.get("content", "")
+                if msg_type == "system_event" and msg_content.startswith("Starting task execution:"):
                     # This is an agent_started message
                     ws_msg_type = "agent_started"
-                    instruction = msg.content.replace("Starting task execution: ", "")
+                    instruction = msg_content.replace("Starting task execution: ", "")
                     content = {
                         "instruction": instruction,
                         "status": "initializing"
                     }
-                elif msg_type == "error" and msg.content.startswith("Task failed:"):
+                elif msg_type == "error" and msg_content.startswith("Task failed:"):
                     # This is an error message
                     ws_msg_type = "agent_error"
-                    error_msg = msg.content.replace("Task failed: ", "")
+                    error_msg = msg_content.replace("Task failed: ", "")
                     content = {"error": error_msg}
                 elif msg_type == "tool_call":
                     ws_msg_type = "agent_tool_call"
+                    # Parse metadata if it's a string
+                    metadata = msg.get("metadata", {})
+                    if isinstance(metadata, str):
+                        try:
+                            import json
+                            metadata = json.loads(metadata)
+                        except:
+                            metadata = {}
                     content = {
-                        "tool_name": msg.metadata.get("tool_name", ""),
-                        "tool_input": msg.metadata.get("parameters", {})
+                        "tool_name": metadata.get("tool_name", ""),
+                        "tool_input": metadata.get("parameters", {})
                     }
                 elif msg_type == "tool_response":
                     ws_msg_type = "agent_tool_result"
-                    tool_result = msg.content.replace("Tool result: ", "")
+                    tool_result = msg_content.replace("Tool result: ", "")
+                    # Parse metadata if it's a string
+                    metadata = msg.get("metadata", {})
+                    if isinstance(metadata, str):
+                        try:
+                            import json
+                            metadata = json.loads(metadata)
+                        except:
+                            metadata = {}
                     content = {
-                        "tool_name": msg.metadata.get("tool_name", ""),
+                        "tool_name": metadata.get("tool_name", ""),
                         "tool_output": tool_result,
-                        "success": msg.metadata.get("success", True)
+                        "success": metadata.get("success", True)
                     }
                 elif msg_type == "agent_response":
                     ws_msg_type = "agent_thinking"
-                    content = {"thought": msg.content}
+                    content = {"thought": msg_content}
                 else:
                     # Default format
                     ws_msg_type = msg_type
-                    content = msg.metadata if msg.metadata else {"message": msg.content}
+                    # Parse metadata if it's a string
+                    metadata = msg.get("metadata", {})
+                    if isinstance(metadata, str):
+                        try:
+                            import json
+                            metadata = json.loads(metadata)
+                        except:
+                            metadata = {}
+                    content = metadata if metadata else {"message": msg_content}
                 
                 ws_msg = {
                     "type": ws_msg_type,
@@ -402,7 +584,7 @@ async def get_tree_messages(tree_id: int):
                     "tree_id": tree_id,
                     "agent_name": agent_name,
                     "content": content,
-                    "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
+                    "timestamp": msg.get("timestamp")
                 }
                 messages.append(ws_msg)
         
@@ -418,15 +600,17 @@ async def get_tree_messages(tree_id: int):
 async def get_task_status(task_id: int):
     """Get detailed status of a specific task"""
     try:
-        task = await database.tasks.get_by_id(task_id)
+        # Convert to string for database lookup
+        task = await database.tasks.get_by_id(str(task_id))
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         
         # Get task tree info
-        tree_tasks = await database.tasks.get_by_tree_id(task.tree_id)
+        tree_id = task.get("tree_id", task_id)
+        tree_tasks = await database.tasks.get_by_tree_id(str(tree_id))
         
         # Get recent messages
-        messages = await database.messages.get_by_task_id(task_id)
+        messages = await database.messages.get_by_task_id(str(task_id))
         recent_messages = messages[-5:] if messages else []
         
         # Get runtime status if available
@@ -435,15 +619,15 @@ async def get_task_status(task_id: int):
             runtime_active = task_id in runtime_integration.runtime_engine.active_agents
         
         return {
-            "task": task.model_dump(),
+            "task": task,
             "tree_info": {
-                "tree_id": task.tree_id,
+                "tree_id": tree_id,
                 "total_tasks": len(tree_tasks),
-                "completed_tasks": len([t for t in tree_tasks if t.status == TaskStatus.COMPLETE]),
-                "failed_tasks": len([t for t in tree_tasks if t.status == TaskStatus.FAILED]),
-                "active_tasks": len([t for t in tree_tasks if t.status in [TaskStatus.RUNNING, TaskStatus.QUEUED]])
+                "completed_tasks": len([t for t in tree_tasks if t.get("status") == "completed"]),
+                "failed_tasks": len([t for t in tree_tasks if t.get("status") == "failed"]),
+                "active_tasks": len([t for t in tree_tasks if t.get("status") in ["running", "queued", "created"]])
             },
-            "recent_messages": [msg.model_dump() for msg in recent_messages],
+            "recent_messages": recent_messages,
             "is_running": runtime_active
         }
     except HTTPException:
@@ -572,7 +756,31 @@ async def list_agents():
     """List all available agents"""
     try:
         agents = await database.agents.get_all_active()
-        return {"agents": [agent.model_dump() for agent in agents]}
+        # Parse JSON fields to proper arrays
+        for agent in agents:
+            if isinstance(agent, dict):
+                # Parse JSON string fields to arrays
+                if "available_tools" in agent and isinstance(agent["available_tools"], str):
+                    try:
+                        agent["available_tools"] = json.loads(agent["available_tools"])
+                    except:
+                        agent["available_tools"] = []
+                if "context_documents" in agent and isinstance(agent["context_documents"], str):
+                    try:
+                        agent["context_documents"] = json.loads(agent["context_documents"])
+                    except:
+                        agent["context_documents"] = []
+                if "permissions" in agent and isinstance(agent["permissions"], str):
+                    try:
+                        agent["permissions"] = json.loads(agent["permissions"])
+                    except:
+                        agent["permissions"] = []
+                if "constraints" in agent and isinstance(agent["constraints"], str):
+                    try:
+                        agent["constraints"] = json.loads(agent["constraints"])
+                    except:
+                        agent["constraints"] = []
+        return {"agents": agents}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -584,7 +792,31 @@ async def get_agent(agent_name: str):
         agent = await database.agents.get_by_name(agent_name)
         if not agent:
             raise HTTPException(status_code=404, detail="Agent not found")
-        return agent.model_dump()
+        
+        # Parse JSON fields to proper arrays
+        if isinstance(agent, dict):
+            if "available_tools" in agent and isinstance(agent["available_tools"], str):
+                try:
+                    agent["available_tools"] = json.loads(agent["available_tools"])
+                except:
+                    agent["available_tools"] = []
+            if "context_documents" in agent and isinstance(agent["context_documents"], str):
+                try:
+                    agent["context_documents"] = json.loads(agent["context_documents"])
+                except:
+                    agent["context_documents"] = []
+            if "permissions" in agent and isinstance(agent["permissions"], str):
+                try:
+                    agent["permissions"] = json.loads(agent["permissions"])
+                except:
+                    agent["permissions"] = []
+            if "constraints" in agent and isinstance(agent["constraints"], str):
+                try:
+                    agent["constraints"] = json.loads(agent["constraints"])
+                except:
+                    agent["constraints"] = []
+        
+        return agent
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -625,7 +857,7 @@ async def list_documents():
     """List all context documents"""
     try:
         from config.database import db_manager
-        query = "SELECT name, title, category, format, LENGTH(content) as size, created_at, updated_at FROM context_documents ORDER BY category, name"
+        query = "SELECT name, title, category, format, LENGTH(content) as size FROM context_documents ORDER BY category, name"
         results = await db_manager.execute_query(query)
         return {"documents": results}
     except Exception as e:
@@ -639,7 +871,7 @@ async def get_document(doc_name: str):
         doc = await database.context_documents.get_by_name(doc_name)
         if not doc:
             raise HTTPException(status_code=404, detail="Document not found")
-        return doc.model_dump()
+        return doc
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -666,6 +898,65 @@ async def update_document(doc_name: str, doc_update: dict):
 
 
 # System Information Endpoints
+
+@app.get("/system/state")
+async def get_system_state():
+    """Get current system initialization state"""
+    try:
+        # Check if we have a properly initialized system
+        agents = await database.agents.get_all_active()
+        
+        # System is initialized if we have more than just the bootstrap agents
+        # init_schema.sql creates 8 agents, so we need at least 8
+        if len(agents) >= 8:
+            # Check if agents have proper instructions (not just placeholders)
+            agent_names = [a.get('name') for a in agents]
+            required_agents = ['agent_selector', 'task_breakdown', 'context_addition', 
+                             'tool_addition', 'task_evaluator', 'documentation_agent',
+                             'summary_agent', 'review_agent']
+            
+            if all(name in agent_names for name in required_agents):
+                return {"state": "ready"}
+        
+        return {"state": "uninitialized"}
+    except Exception as e:
+        logger.error(f"Error checking system state: {e}")
+        return {"state": "uninitialized"}
+
+
+@app.post("/system/initialize")
+async def initialize_system(settings: dict = None):
+    """Initialize the system with initialization tasks"""
+    try:
+        if not runtime_integration:
+            raise RuntimeError("Runtime integration not initialized")
+        
+        # Submit the system initialization task
+        from core.initialization_tasks import get_initialization_tasks
+        
+        # Create the main initialization task
+        task_params = {
+            "instruction": "Execute system initialization process with comprehensive framework establishment",
+            "metadata": {
+                "type": "system_initialization",
+                "settings": settings or {},
+                "initialization_tasks": [task.to_dict() for task in get_initialization_tasks()]
+            }
+        }
+        
+        task = await runtime_integration.runtime_engine.create_task(**task_params)
+        
+        # The initialization process will handle creating all subtasks
+        return {
+            "status": "initializing",
+            "task_id": task.id,
+            "message": "System initialization started"
+        }
+        
+    except Exception as e:
+        logger.error(f"Initialization error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/system/stats")
 async def get_system_stats():
@@ -816,14 +1107,14 @@ async def initialize_system(settings: dict):
         initialization_task_id = await runtime_integration.create_task(
             instruction="Execute system initialization sequence including knowledge bootstrap and framework establishment",
             parent_task_id=None,
-            agent_type="agent_selector",
-            priority=1,
             process="system_initialization_process",
             metadata={
                 "task_type": "system_initialization",
-                "phase": "complete",
+                "phase": "complete", 
                 "manual_mode": settings.get("manualStepMode", True),
-                "initialization_task": True
+                "initialization_task": True,
+                "assigned_agent": "agent_selector",
+                "priority": 1
             }
         )
         

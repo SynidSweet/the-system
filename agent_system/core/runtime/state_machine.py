@@ -5,8 +5,8 @@ from typing import Dict, List, Set, Optional, Callable
 from datetime import datetime
 import asyncio
 
-from agent_system.core.events.event_types import EventType, EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..events.event_types import EventType, EntityType
+from ..events.event_manager import EventManager
 
 
 class TaskState(str, Enum):
@@ -110,24 +110,30 @@ class TaskStateMachine:
         if not self.is_valid_transition(current_state, new_state):
             if self.event_manager:
                 await self.event_manager.log_event(
-                    EventType.TASK_STATE_CHANGE_FAILED,
+                    EventType.SYSTEM_WARNING,
                     EntityType.TASK,
                     task_id,
-                    current_state=current_state.value,
-                    attempted_state=new_state.value,
-                    reason="Invalid transition"
+                    event_data={
+                        "current_state": current_state.value,
+                        "attempted_state": new_state.value,
+                        "reason": "Invalid transition",
+                        "event": "task_state_change_failed"
+                    }
                 )
             return False
         
         # Log successful transition
         if self.event_manager:
             await self.event_manager.log_event(
-                EventType.TASK_STATE_CHANGED,
+                EventType.ENTITY_UPDATED,
                 EntityType.TASK,
                 task_id,
-                old_state=current_state.value,
-                new_state=new_state.value,
-                metadata=metadata
+                event_data={
+                    "old_state": current_state.value,
+                    "new_state": new_state.value,
+                    "field": "task_state",
+                    "metadata": metadata
+                }
             )
         
         return True

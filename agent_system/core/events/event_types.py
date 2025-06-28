@@ -38,6 +38,8 @@ class EventType(str, Enum):
     SYSTEM_ERROR = "system_error"
     SYSTEM_WARNING = "system_warning"
     SYSTEM_OPTIMIZATION = "system_optimization"
+    RUNTIME_STARTED = "runtime_started"
+    RUNTIME_STOPPED = "runtime_stopped"
     SYSTEM_HEALTH_CHECK = "system_health_check"
     
     # Review and optimization events

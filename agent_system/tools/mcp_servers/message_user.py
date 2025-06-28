@@ -6,9 +6,9 @@ import asyncio
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from agent_system.tools.mcp_servers.base import MCPServer
-from agent_system.core.permissions.manager import DatabasePermissionManager
-from agent_system.core.websocket_messages import send_websocket_message
+from .base import MCPServer
+from core.permissions.manager import DatabasePermissionManager
+# from core.websocket_messages import send_websocket_message  # Function doesn't exist
 
 logger = logging.getLogger(__name__)
 
@@ -82,10 +82,8 @@ class MessageUserMCP(MCPServer):
     def register_tools(self):
         """Register message tools."""
         self.register_tool("send_message", self.send_message)
-        self.register_tool("send_structured_message", self.send_structured_message)
-        self.register_tool("send_progress_update", self.send_progress_update)
-        self.register_tool("send_error_notification", self.send_error_notification)
-        self.register_tool("send_completion_report", self.send_completion_report)
+        self.register_tool("ask_user", self.ask_user)
+        self.register_tool("show_progress", self.show_progress)
     
     async def send_message(self, message: str, message_type: str = "info",
                           agent_type: str = None, task_id: int = None) -> bool:
@@ -273,3 +271,29 @@ class MessageUserMCP(MCPServer):
             )
         except asyncio.TimeoutError:
             return None
+    
+    async def ask_user(self, question: str, options: Optional[List[str]] = None,
+                      default: Optional[str] = None, agent_type: str = None, 
+                      task_id: int = None) -> str:
+        """Ask user a question (placeholder implementation)."""
+        # This would normally integrate with a real user interface
+        # For now, just log the question and return default
+        await self.send_message(
+            f"Question: {question}" + (f"\nOptions: {', '.join(options)}" if options else ""),
+            message_type="info",
+            agent_type=agent_type,
+            task_id=task_id
+        )
+        return default or (options[0] if options else "")
+    
+    async def show_progress(self, message: str, percentage: float,
+                          agent_type: str = None, task_id: int = None) -> bool:
+        """Show a progress message."""
+        return await self.send_progress_update(
+            current_step=int(percentage),
+            total_steps=100,
+            step_description=message,
+            percentage=percentage,
+            agent_type=agent_type,
+            task_id=task_id
+        )

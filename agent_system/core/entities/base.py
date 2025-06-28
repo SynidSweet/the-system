@@ -6,8 +6,8 @@ from datetime import datetime
 from enum import Enum
 import json
 
-from agent_system.core.events.event_types import EntityType, EventType
-from agent_system.core.events.event_manager import EventManager
+from ..events.event_types import EntityType, EventType
+from ..events.event_manager import EventManager
 
 
 class EntityState(str, Enum):

@@ -21,11 +21,17 @@ function DocumentBrowser({ apiBaseUrl }) {
   const fetchDocuments = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/documents`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
-      setDocuments(data.documents);
+      const documents = Array.isArray(data.documents) ? data.documents : [];
+      setDocuments(documents);
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching documents:', err);
       setError('Failed to load documents');
+      setDocuments([]);
       setLoading(false);
     }
   };
@@ -33,11 +39,16 @@ function DocumentBrowser({ apiBaseUrl }) {
   const selectDocument = async (doc) => {
     try {
       const response = await fetch(`${apiBaseUrl}/documents/${doc.name}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setSelectedDoc(data);
-      setEditedContent(data.content);
+      setEditedContent(data.content || '');
       setEditMode(false);
+      setError(null);
     } catch (err) {
+      console.error('Error fetching document details:', err);
       setError('Failed to load document details');
     }
   };
@@ -90,9 +101,9 @@ function DocumentBrowser({ apiBaseUrl }) {
   };
 
   const filteredDocs = documents.filter(doc => 
-    doc.name.toLowerCase().includes(filter.toLowerCase()) ||
-    doc.title.toLowerCase().includes(filter.toLowerCase()) ||
-    doc.category.toLowerCase().includes(filter.toLowerCase())
+    (doc.name || '').toLowerCase().includes(filter.toLowerCase()) ||
+    (doc.title || '').toLowerCase().includes(filter.toLowerCase()) ||
+    (doc.category || '').toLowerCase().includes(filter.toLowerCase())
   );
 
   // Group documents by category
@@ -133,8 +144,8 @@ function DocumentBrowser({ apiBaseUrl }) {
                   >
                     <div className="doc-name">{doc.name}</div>
                     <div className="doc-meta">
-                      <span className="doc-format">{doc.format}</span>
-                      <span className="doc-size">{formatSize(doc.size)}</span>
+                      <span className="doc-format">{doc.format || 'text'}</span>
+                      <span className="doc-size">{formatSize(doc.size || 0)}</span>
                     </div>
                   </div>
                 ))}
@@ -151,8 +162,8 @@ function DocumentBrowser({ apiBaseUrl }) {
               <div>
                 <h2>{selectedDoc.title || selectedDoc.name}</h2>
                 <div className="doc-info">
-                  <span className="doc-category-badge">{selectedDoc.category}</span>
-                  <span className="doc-format-badge">{selectedDoc.format}</span>
+                  <span className="doc-category-badge">{selectedDoc.category || 'general'}</span>
+                  <span className="doc-format-badge">{selectedDoc.format || 'text'}</span>
                 </div>
               </div>
               <div className="doc-actions">
@@ -264,13 +275,13 @@ function DocumentBrowser({ apiBaseUrl }) {
                   <div className="metadata-item">
                     <span className="meta-label">Created:</span>
                     <span className="meta-value">
-                      {new Date(selectedDoc.created_at).toLocaleString()}
+                      {selectedDoc.created_at ? new Date(selectedDoc.created_at).toLocaleString() : 'N/A'}
                     </span>
                   </div>
                   <div className="metadata-item">
                     <span className="meta-label">Updated:</span>
                     <span className="meta-value">
-                      {new Date(selectedDoc.updated_at).toLocaleString()}
+                      {selectedDoc.updated_at ? new Date(selectedDoc.updated_at).toLocaleString() : 'N/A'}
                     </span>
                   </div>
                 </div>

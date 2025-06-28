@@ -6,7 +6,7 @@ import re
 from datetime import datetime
 
 from config.settings import settings
-from .models import ModelConfig, MCPToolCall
+from .models import AIModelConfig as ModelConfig, MCPToolCall
 
 
 class AIModelProvider(ABC):
@@ -68,8 +68,8 @@ class AnthropicProvider(AIModelProvider):
         
         # Prepare request parameters
         request_params = {
-            "model": self.config.model_name,
-            "max_tokens": self.config.max_tokens,
+            "model": self.config.model,
+            "max_tokens": self.config.max_tokens or 1024,
             "temperature": self.config.temperature,
             "messages": anthropic_messages
         }
@@ -151,7 +151,7 @@ class GoogleProvider(AIModelProvider):
                 raise ValueError("Google API key not found. Set GOOGLE_API_KEY environment variable.")
             
             genai.configure(api_key=api_key)
-            self.client = genai.GenerativeModel(self.config.model_name)
+            self.client = genai.GenerativeModel(self.config.model)
             
         except ImportError:
             raise ImportError("google-generativeai package not installed. Run: pip install google-generativeai")
@@ -184,7 +184,7 @@ class GoogleProvider(AIModelProvider):
             # Create model with system instruction if provided
             if system_instruction:
                 model = self.genai.GenerativeModel(
-                    self.config.model_name,
+                    self.config.model,
                     system_instruction=system_instruction
                 )
             else:
@@ -214,7 +214,7 @@ class GoogleProvider(AIModelProvider):
                     "output_tokens": getattr(response.usage_metadata, 'candidates_token_count', 0),
                     "total_tokens": getattr(response.usage_metadata, 'total_token_count', 0)
                 },
-                "model": self.config.model_name,
+                "model": self.config.model,
                 "stop_reason": response.candidates[0].finish_reason.name if response.candidates else "stop",
                 "tool_calls": self._extract_tool_calls(response)
             }
@@ -275,7 +275,7 @@ class OpenAIProvider(AIModelProvider):
         
         # Prepare request parameters
         request_params = {
-            "model": self.config.model_name,
+            "model": self.config.model,
             "messages": messages,
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature
@@ -343,7 +343,7 @@ class AIModelManager:
     
     async def get_provider(self, config: ModelConfig) -> AIModelProvider:
         """Get or create an AI model provider instance"""
-        provider_key = f"{config.provider}:{config.model_name}"
+        provider_key = f"{config.provider}:{config.model}"
         
         if provider_key not in self._instances:
             if config.provider not in self._providers:
@@ -359,6 +359,40 @@ class AIModelManager:
     def register_provider(self, name: str, provider_class: type):
         """Register a new AI model provider"""
         self._providers[name] = provider_class
+    
+    async def get_response(self, prompt: str, model_config: Optional[ModelConfig] = None) -> 'AIResponse':
+        """Get a response from the AI model"""
+        from dataclasses import dataclass
+        from typing import List
+        
+        @dataclass
+        class AIResponse:
+            content: str
+            tool_calls: List[MCPToolCall] = None
+        
+        # Use default config if none provided
+        if model_config is None:
+            model_config = ModelConfig(
+                provider="anthropic",
+                model="claude-3-sonnet-20240229"
+            )
+        
+        # Get provider
+        provider = await self.get_provider(model_config)
+        
+        # Prepare messages
+        messages = [{"role": "user", "content": prompt}]
+        
+        # Generate response
+        response = await provider.generate_response(messages)
+        
+        # Parse tool calls
+        tool_calls = provider.parse_tool_calls(response.get("content", ""))
+        
+        return AIResponse(
+            content=response.get("content", ""),
+            tool_calls=tool_calls
+        )
     
     async def close_all(self):
         """Close all provider connections"""

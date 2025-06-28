@@ -3,9 +3,9 @@
 import logging
 from typing import Dict, Any, Optional
 
-from agent_system.core.processes.base import BaseProcess
-from agent_system.core.entities.task_entity import TaskEntity
-from agent_system.core.events.event_types import EntityType
+from ..base import BaseProcess, ProcessResult
+from ...entities.task_entity import TaskEntity
+from ...events.event_types import EntityType
 
 logger = logging.getLogger(__name__)
 
@@ -13,14 +13,11 @@ logger = logging.getLogger(__name__)
 class NeedMoreToolsProcess(BaseProcess):
     """Process to handle agent requests for additional tools."""
     
-    def get_process_name(self) -> str:
-        return "need_more_tools_process"
-    
-    def get_process_description(self) -> str:
-        return "Handles requests from agents for additional tool access"
+    # Process metadata defined in class attributes
+    # The parent BaseProcess class handles these through the registry
     
     async def execute(self, requesting_task_id: int, tool_request: str, 
-                     justification: str, **kwargs) -> Dict[str, Any]:
+                     justification: str, **kwargs) -> ProcessResult:
         """
         Execute the tool request process.
         
@@ -34,12 +31,12 @@ class NeedMoreToolsProcess(BaseProcess):
         """
         try:
             # Get the requesting task
-            requesting_task = await self.system_functions.get_task(requesting_task_id)
+            requesting_task = await self.sys.get_task(requesting_task_id)
             if not requesting_task:
                 raise ValueError(f"Requesting task {requesting_task_id} not found")
             
             # Create a task for the tool addition agent to evaluate the request
-            tool_eval_task_id = await self.system_functions.create_task(
+            tool_eval_task_id = await self.sys.create_task(
                 instruction=f"Evaluate tool request: '{tool_request}' with justification: '{justification}'",
                 parent_task_id=requesting_task_id,
                 assigned_agent="tool_addition",
@@ -53,7 +50,7 @@ class NeedMoreToolsProcess(BaseProcess):
             )
             
             # Create a task for request validation
-            validation_task_id = await self.system_functions.create_task(
+            validation_task_id = await self.sys.create_task(
                 instruction=f"Validate tool request necessity and security: '{tool_request}'",
                 parent_task_id=tool_eval_task_id,
                 assigned_agent="request_validation",
@@ -65,7 +62,7 @@ class NeedMoreToolsProcess(BaseProcess):
             )
             
             # Log the tool request
-            await self.system_functions.log_event(
+            await self.sys.log_event(
                 event_type="TOOL_REQUEST",
                 entity_type=EntityType.TASK,
                 entity_id=requesting_task_id,
@@ -80,25 +77,37 @@ class NeedMoreToolsProcess(BaseProcess):
             # Note: The actual tool assignment will be done by the tool_addition agent
             # after validation. This process just creates the necessary tasks.
             
-            return {
-                "status": "tool_request_submitted",
-                "evaluation_task_id": tool_eval_task_id,
-                "validation_task_id": validation_task_id,
-                "message": "Tool request submitted for evaluation and validation"
-            }
-            
-        except Exception as e:
-            logger.error(f"Tool request process failed: {e}")
-            
-            # Log the failure
-            await self.system_functions.log_event(
-                event_type="TOOL_REQUEST_FAILED",
-                entity_type=EntityType.TASK,
-                entity_id=requesting_task_id,
-                metadata={
-                    "error": str(e),
-                    "tool_request": tool_request
+            return ProcessResult(
+                status="success",
+                data={
+                    "status": "tool_request_submitted",
+                    "evaluation_task_id": tool_eval_task_id,
+                    "validation_task_id": validation_task_id,
+                    "message": "Tool request submitted for evaluation and validation"
                 }
             )
             
-            raise
+        except Exception as e:
+            return await self.handle_error(e, requesting_task_id=requesting_task_id, tool_request=tool_request)
+    
+    async def validate_parameters(
+        self,
+        requesting_task_id: int = None,
+        tool_request: str = None,
+        justification: str = None,
+        **kwargs
+    ) -> bool:
+        """Validate process parameters."""
+        if requesting_task_id is None:
+            logger.error("NeedMoreToolsProcess requires requesting_task_id")
+            return False
+        
+        if not tool_request:
+            logger.error("NeedMoreToolsProcess requires tool_request")
+            return False
+        
+        if not justification:
+            logger.error("NeedMoreToolsProcess requires justification")
+            return False
+        
+        return True

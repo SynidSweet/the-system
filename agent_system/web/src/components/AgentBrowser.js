@@ -17,11 +17,17 @@ function AgentBrowser({ apiBaseUrl }) {
   const fetchAgents = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/agents`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
-      setAgents(data.agents);
+      const agents = Array.isArray(data.agents) ? data.agents : [];
+      setAgents(agents);
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching agents:', err);
       setError('Failed to load agents');
+      setAgents([]);
       setLoading(false);
     }
   };
@@ -29,11 +35,16 @@ function AgentBrowser({ apiBaseUrl }) {
   const selectAgent = async (agent) => {
     try {
       const response = await fetch(`${apiBaseUrl}/agents/${agent.name}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setSelectedAgent(data);
       setEditedAgent(data);
       setEditMode(false);
+      setError(null);
     } catch (err) {
+      console.error('Error fetching agent details:', err);
       setError('Failed to load agent details');
     }
   };
@@ -129,7 +140,7 @@ function AgentBrowser({ apiBaseUrl }) {
               onClick={() => selectAgent(agent)}
             >
               <div className="agent-name">{agent.name}</div>
-              <div className="agent-status">{agent.status}</div>
+              <div className="agent-status">{agent.status || 'active'}</div>
             </div>
           ))}
         </div>
@@ -185,14 +196,14 @@ function AgentBrowser({ apiBaseUrl }) {
                 <label>Available Tools</label>
                 {editMode ? (
                   <textarea
-                    value={JSON.stringify(editedAgent.available_tools, null, 2)}
+                    value={JSON.stringify(editedAgent.available_tools || [], null, 2)}
                     onChange={(e) => handleArrayFieldChange('available_tools', e.target.value)}
                     className="json-input"
                     rows={5}
                   />
                 ) : (
                   <div className="tools-list">
-                    {selectedAgent.available_tools.map((tool, idx) => (
+                    {(selectedAgent.available_tools || []).map((tool, idx) => (
                       <span key={idx} className="tool-chip">{tool}</span>
                     ))}
                   </div>
@@ -203,14 +214,14 @@ function AgentBrowser({ apiBaseUrl }) {
                 <label>Context Documents</label>
                 {editMode ? (
                   <textarea
-                    value={JSON.stringify(editedAgent.context_documents, null, 2)}
+                    value={JSON.stringify(editedAgent.context_documents || [], null, 2)}
                     onChange={(e) => handleArrayFieldChange('context_documents', e.target.value)}
                     className="json-input"
                     rows={5}
                   />
                 ) : (
                   <div className="docs-list">
-                    {selectedAgent.context_documents.map((doc, idx) => (
+                    {(selectedAgent.context_documents || []).map((doc, idx) => (
                       <span key={idx} className="doc-chip">{doc}</span>
                     ))}
                   </div>
@@ -255,8 +266,8 @@ function AgentBrowser({ apiBaseUrl }) {
                   <div>ID: {selectedAgent.id}</div>
                   <div>Version: {selectedAgent.version}</div>
                   <div>Status: {selectedAgent.status}</div>
-                  <div>Created: {new Date(selectedAgent.created_at).toLocaleString()}</div>
-                  <div>Updated: {new Date(selectedAgent.updated_at).toLocaleString()}</div>
+                  <div>Created: {selectedAgent.created_at ? new Date(selectedAgent.created_at).toLocaleString() : 'N/A'}</div>
+                  <div>Updated: {selectedAgent.updated_at ? new Date(selectedAgent.updated_at).toLocaleString() : 'N/A'}</div>
                 </div>
               </div>
             </div>

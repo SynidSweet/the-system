@@ -4,16 +4,16 @@ import asyncio
 import logging
 from typing import Dict, List, Optional, Any
 
-from agent_system.core.database_manager import DatabaseManager
-from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.permissions.manager import DatabasePermissionManager, get_permission_manager
-from agent_system.tools.mcp_servers.base import get_mcp_registry, MCPServerRegistry
-from agent_system.tools.mcp_servers.entity_manager import EntityManagerMCP
-from agent_system.tools.mcp_servers.message_user import MessageUserMCP, UserInterface
-from agent_system.tools.mcp_servers.file_system import FileSystemMCPServer
-from agent_system.tools.mcp_servers.sql_lite import SQLiteMCPServer
-from agent_system.tools.mcp_servers.terminal import TerminalMCPServer
-from agent_system.tools.mcp_servers.github import GitHubMCPServer
+from core.database_manager import DatabaseManager
+from core.entities.entity_manager import EntityManager
+from core.permissions.manager import DatabasePermissionManager, get_permission_manager
+from .base import get_mcp_registry, MCPServerRegistry
+from .entity_manager import EntityManagerMCP
+from .message_user import MessageUserMCP, UserInterface
+from .file_system import FileSystemMCPServer
+from .sql_lite import SQLiteMCPServer
+from .terminal import TerminalMCPServer
+from .github import GitHubMCPServer
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class ToolSystemManager:
         # SQL Lite
         sql_server = SQLiteMCPServer(
             permission_manager=self.permission_manager,
-            db_path="/code/personal/the-system/data/agent_system.db",
+            db_path="/home/ubuntu/system.petter.ai/agent_system/agent_system.db",
             read_only=True,
             max_results=1000
         )
@@ -63,7 +63,7 @@ class ToolSystemManager:
         # Terminal
         terminal_server = TerminalMCPServer(
             permission_manager=self.permission_manager,
-            allowed_directories=self.config.get("allowed_file_paths", ["/code/personal/the-system"]),
+            allowed_directories=self.config.get("allowed_file_paths", ["/home/ubuntu/system.petter.ai"]),
             command_whitelist=None,  # Use default whitelist
             max_output_size=1024 * 1024,  # 1MB
             default_timeout=30

@@ -220,3 +220,92 @@ When implementing new features:
 - **Bootstrap**: Converts docs → structured knowledge on first run
 
 The knowledge system ensures every task has the context needed for isolated success!
+
+## System Management Scripts
+
+### Starting the System
+```bash
+# Recommended: Use service manager
+./svc start    # Start backend and frontend
+./svc status   # Check status
+./svc logs     # View logs
+./svc stop     # Stop services
+./svc restart  # Restart services
+
+# Alternative methods
+./start.sh     # Foreground mode (shows output)
+./startup.sh   # Background mode
+```
+
+### System Reset and Initialization
+
+#### 1. Reset to Fresh State
+```bash
+# Reset system to uninitialized state
+python scripts/reset_system.py
+
+# Reset with backup
+python scripts/reset_system.py --backup
+```
+
+#### 2. Initialize System
+**Option A: Web-Based Initialization (Recommended)**
+1. Start the system: `./svc start`
+2. Open http://localhost:3000
+3. The initialization page will appear automatically
+4. Configure settings and click "Initialize System"
+
+**Option B: Command-Line Initialization**
+```bash
+# Full initialization with all agents and documents
+python scripts/seed_system.py
+
+# Minimal initialization (only agent_selector)
+python scripts/minimal_init.py
+
+# Standard initialization
+python scripts/init_system.py
+```
+
+### Common Workflows
+
+#### Fresh Installation
+```bash
+1. ./deploy.sh                    # Install dependencies and build
+2. ./svc start                    # Start services
+3. Open http://localhost:3000     # Initialize via web UI
+```
+
+#### Reset and Reinitialize
+```bash
+1. python scripts/reset_system.py --backup  # Reset with backup
+2. ./svc restart                            # Restart services
+3. python scripts/seed_system.py            # Seed full system
+```
+
+#### Development Testing
+```bash
+1. python scripts/reset_system.py           # Clean slate
+2. python scripts/minimal_init.py           # Minimal setup
+3. python scripts/test_simple_flow.py       # Test basic flow
+```
+
+### Knowledge System
+```bash
+# Bootstrap knowledge from documentation
+python scripts/bootstrap_knowledge.py
+```
+
+### Backup and Recovery
+```bash
+# Create backup
+python scripts/backup_system.py backup
+
+# Restore from backup
+python scripts/backup_system.py restore --backup-id backup_20240120_143022
+
+# List backups
+python scripts/backup_system.py list
+```
+
+For more detailed script usage information, see `docs/script_usage_guide.md`.

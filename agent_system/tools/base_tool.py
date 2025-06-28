@@ -3,7 +3,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime
 import asyncio
 import time
-from core.models import MCPToolCall, MCPToolResult, ToolImplementation
+from .models import MCPToolCall, MCPToolResult, ToolImplementation
 
 
 class BaseMCPTool(ABC):

@@ -6,9 +6,9 @@ from typing import Dict, Type, Optional, List, Any
 from pathlib import Path
 import logging
 
-from agent_system.core.processes.base import BaseProcess
-from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.events.event_manager import EventManager
+from .base import BaseProcess
+from ..entities.entity_manager import EntityManager
+from ..events.event_manager import EventManager
 
 
 logger = logging.getLogger(__name__)
@@ -38,14 +38,14 @@ class ProcessRegistry:
         """Register default system processes."""
         # Map of process names to their module paths
         default_processes = {
-            "neutral_task": "agent_system.core.processes.neutral_task_process",
-            "system_initialization_process": "agent_system.core.processes.system_initialization_process",
-            "break_down_task_process": "agent_system.core.processes.tool_processes.break_down_task",
-            "create_subtask_process": "agent_system.core.processes.tool_processes.create_subtask",
-            "end_task_process": "agent_system.core.processes.tool_processes.end_task",
-            "need_more_context_process": "agent_system.core.processes.tool_processes.need_more_context",
-            "need_more_tools_process": "agent_system.core.processes.tool_processes.need_more_tools",
-            "flag_for_review_process": "agent_system.core.processes.tool_processes.flag_for_review",
+            "neutral_task": ".neutral_task_process",
+            # "system_initialization_process": ".system_initialization_process",  # Has broken imports
+            "break_down_task_process": ".tool_processes.break_down_task",
+            "create_subtask_process": ".tool_processes.create_subtask",
+            "end_task_process": ".tool_processes.end_task",
+            "need_more_context_process": ".tool_processes.need_more_context",
+            "need_more_tools_process": ".tool_processes.need_more_tools",
+            # "flag_for_review_process": ".tool_processes.flag_for_review",  # File doesn't exist
         }
         
         for process_name, module_path in default_processes.items():
@@ -57,8 +57,13 @@ class ProcessRegistry:
     def _load_process_from_module(self, process_name: str, module_path: str):
         """Load a process class from a module."""
         try:
-            # Import the module
-            module = importlib.import_module(module_path)
+            # Import the module - handle relative imports
+            if module_path.startswith('.'):
+                # Relative import - need to provide parent package
+                module = importlib.import_module(module_path, package='core.processes')
+            else:
+                # Absolute import
+                module = importlib.import_module(module_path)
             
             # Find the process class
             process_class = None

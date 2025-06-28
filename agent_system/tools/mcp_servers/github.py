@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from agent_system.tools.mcp_servers.base import MCPServer
-from agent_system.core.permissions.manager import DatabasePermissionManager
+from .base import MCPServer
+from core.permissions.manager import DatabasePermissionManager
 
 
 class GitHubMCPServer(MCPServer):
@@ -44,7 +44,7 @@ class GitHubMCPServer(MCPServer):
         allow_push: bool = False,
         protected_branches: Optional[List[str]] = None
     ):
-        super().__init__(permission_manager)
+        super().__init__("github", permission_manager)
         
         self.repo_path = Path(repo_path).resolve()
         if not self.repo_path.exists():
@@ -539,6 +539,16 @@ class GitHubMCPServer(MCPServer):
                 "success": False,
                 "error": result.get("stderr", "Failed to push changes")
             }
+    
+    def register_tools(self):
+        """Register GitHub tools."""
+        self.register_tool("get_status", self.get_status)
+        self.register_tool("get_diff", self.get_diff)
+        self.register_tool("get_log", self.get_log)
+        self.register_tool("create_branch", self.create_branch)
+        self.register_tool("commit", self.commit_changes)
+        self.register_tool("push", self.push_changes)
+        self.register_tool("pull", self.pull_changes)
     
     @property
     def name(self) -> str:

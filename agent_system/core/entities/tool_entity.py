@@ -2,10 +2,11 @@
 
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+from enum import Enum
 import json
 
-from agent_system.core.entities.base import Entity, EntityState
-from agent_system.core.events.event_types import EntityType
+from .base import Entity, EntityState
+from ..events.event_types import EntityType
 
 
 class ToolCategory(str, Enum):
@@ -155,12 +156,14 @@ class ToolEntity(Entity):
         
         if self.event_manager:
             await self.event_manager.log_event(
-                EventType.TOOL_EXECUTED,
+                EventType.TOOL_COMPLETED if success else EventType.TOOL_FAILED,
                 EntityType.TOOL,
                 self.entity_id,
-                success=success,
-                execution_time=execution_time,
-                error=error
+                event_data={
+                    "success": success,
+                    "execution_time": execution_time,
+                    "error": error
+                }
             )
         
         return True

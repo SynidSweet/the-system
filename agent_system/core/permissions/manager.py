@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import logging
 from datetime import datetime, timedelta
 
-from agent_system.core.database_manager import DatabaseManager
+from core.database_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class DatabasePermissionManager:
             FROM agent_base_permissions 
             WHERE agent_type = ?
         """
-        result = await self.db.agents.execute_query(base_query, [agent_type])
+        result = await self.db.execute_query(base_query, [agent_type])
         
         if not result:
             raise ValueError(f"No base permissions found for agent type: {agent_type}")
@@ -74,7 +74,7 @@ class DatabasePermissionManager:
                 AND is_active = 1 
                 AND (expires_at IS NULL OR expires_at > datetime('now'))
             """
-            task_results = await self.db.agents.execute_query(task_query, [task_id])
+            task_results = await self.db.execute_query(task_query, [task_id])
             
             for row in task_results:
                 task_tools.append(row['tool_name'])
@@ -97,7 +97,7 @@ class DatabasePermissionManager:
         """Assign tool to specific task with optional expiration."""
         # Verify tool exists
         tool_query = "SELECT tool_name, security_level FROM available_tools WHERE tool_name = ? AND is_active = 1"
-        tool_result = await self.db.agents.execute_query(tool_query, [tool_assignment.tool_name])
+        tool_result = await self.db.execute_query(tool_query, [tool_assignment.tool_name])
         
         if not tool_result:
             raise ValueError(f"Tool '{tool_assignment.tool_name}' not found or inactive")
@@ -116,7 +116,7 @@ class DatabasePermissionManager:
             SELECT id FROM task_tool_assignments 
             WHERE task_id = ? AND tool_name = ? AND is_active = 1
         """
-        existing = await self.db.agents.execute_query(check_query, [task_id, tool_assignment.tool_name])
+        existing = await self.db.execute_query(check_query, [task_id, tool_assignment.tool_name])
         
         if existing:
             # Update existing assignment
@@ -126,7 +126,7 @@ class DatabasePermissionManager:
                     assigned_at = CURRENT_TIMESTAMP
                 WHERE task_id = ? AND tool_name = ?
             """
-            await self.db.agents.execute_query(update_query, [
+            await self.db.execute_query(update_query, [
                 expires_at, tool_assignment.assignment_reason, tool_permissions_json,
                 task_id, tool_assignment.tool_name
             ])
@@ -137,7 +137,7 @@ class DatabasePermissionManager:
                 (task_id, tool_name, tool_permissions, assigned_by_agent_id, expires_at, assignment_reason)
                 VALUES (?, ?, ?, ?, ?, ?)
             """
-            await self.db.agents.execute_query(insert_query, [
+            await self.db.execute_query(insert_query, [
                 task_id, tool_assignment.tool_name, tool_permissions_json,
                 assigned_by, expires_at, tool_assignment.assignment_reason
             ])
@@ -183,7 +183,7 @@ class DatabasePermissionManager:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         
-        await self.db.agents.execute_query(query, [
+        await self.db.execute_query(query, [
             task_id, agent_type, tool_name, operation, 
             1 if success else 0, execution_time_ms, 
             parameters_hash, result_summary, error_message
@@ -197,7 +197,7 @@ class DatabasePermissionManager:
             WHERE task_id = ? AND tool_name = ?
         """
         
-        await self.db.agents.execute_query(query, [task_id, tool_name])
+        await self.db.execute_query(query, [task_id, tool_name])
         
         # Clear cache
         self._clear_cache_for_task(task_id)
@@ -213,7 +213,7 @@ class DatabasePermissionManager:
             WHERE expires_at IS NOT NULL AND expires_at <= datetime('now')
             AND is_active = 1
         """
-        result = await self.db.agents.execute_query(query)
+        result = await self.db.execute_query(query)
         
         # Clear entire cache after cleanup
         self._permission_cache.clear()
@@ -250,7 +250,7 @@ class DatabasePermissionManager:
             ORDER BY usage_count DESC
         """
         
-        return await self.db.agents.execute_query(query, params)
+        return await self.db.execute_query(query, params)
     
     async def get_active_tool_assignments(self, task_id: int = None) -> List[Dict[str, Any]]:
         """Get currently active tool assignments."""
@@ -268,7 +268,7 @@ class DatabasePermissionManager:
             """
             params = []
         
-        return await self.db.agents.execute_query(query, params)
+        return await self.db.execute_query(query, params)
     
     async def _log_tool_assignment(self, task_id: int, tool_assignment: ToolAssignment, 
                                   assigned_by: int):

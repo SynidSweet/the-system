@@ -4,8 +4,8 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
 
-from agent_system.core.entities.base import Entity, EntityState
-from agent_system.core.events.event_types import EntityType, EventType
+from .base import Entity, EntityState
+from ..events.event_types import EntityType, EventType
 
 
 class TaskState(str, Enum):
@@ -164,11 +164,14 @@ class TaskEntity(Entity):
         
         if self.event_manager:
             await self.event_manager.log_event(
-                EventType.TASK_STATE_CHANGED,
+                EventType.ENTITY_UPDATED,
                 EntityType.TASK,
                 self.entity_id,
-                old_state=old_state.value,
-                new_state=new_state.value
+                event_data={
+                    "old_state": old_state.value,
+                    "new_state": new_state.value,
+                    "field": "task_state"
+                }
             )
         
         return True
@@ -206,7 +209,7 @@ class TaskEntity(Entity):
                 EventType.TASK_COMPLETED,
                 EntityType.TASK,
                 self.entity_id,
-                result=result
+                event_data={"result": result}
             )
         
         return True
@@ -221,7 +224,7 @@ class TaskEntity(Entity):
                 EventType.TASK_FAILED,
                 EntityType.TASK,
                 self.entity_id,
-                error=error
+                event_data={"error": error}
             )
         
         return True
@@ -239,11 +242,13 @@ class TaskEntity(Entity):
         
         if self.event_manager:
             await self.event_manager.log_event(
-                EventType.TOOL_EXECUTED,
+                EventType.TOOL_CALLED,
                 EntityType.TASK,
                 self.entity_id,
-                tool_name=tool_call.get("name"),
-                tool_args=tool_call.get("arguments")
+                event_data={
+                    "tool_name": tool_call.get("name"),
+                    "tool_args": tool_call.get("arguments")
+                }
             )
         
         return True

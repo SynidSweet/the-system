@@ -14,8 +14,8 @@ from typing import Dict, Any, List, Optional, Union
 from datetime import datetime
 from pathlib import Path
 
-from agent_system.tools.mcp_servers.base import MCPServer
-from agent_system.core.permissions.manager import DatabasePermissionManager
+from .base import MCPServer
+from core.permissions.manager import DatabasePermissionManager
 
 
 class SQLiteMCPServer(MCPServer):
@@ -151,7 +151,7 @@ class SQLiteMCPServer(MCPServer):
         read_only: bool = True,
         max_results: int = 1000
     ):
-        super().__init__(permission_manager)
+        super().__init__("sqlite", permission_manager)
         
         self.db_path = Path(db_path).resolve()
         if not self.db_path.exists():
@@ -159,6 +159,16 @@ class SQLiteMCPServer(MCPServer):
         
         self.read_only = read_only
         self.max_results = max_results
+    
+    def register_tools(self):
+        """Register all SQL tools."""
+        self.register_tool("execute_query", self.execute_query)
+        self.register_tool("get_tables", self.get_tables)
+        self.register_tool("get_schema", self.get_schema)
+        self.register_tool("get_row_count", self.get_row_count)
+        self.register_tool("get_recent_records", self.get_recent_records)
+        self.register_tool("search_records", self.search_records)
+        self.register_tool("get_statistics", self.get_statistics)
     
     def _get_connection(self) -> sqlite3.Connection:
         """Get a database connection with row factory."""

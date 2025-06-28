@@ -4,10 +4,10 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 
-from agent_system.tools.mcp_servers.base import MCPServer, PermissionError
-from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.permissions.manager import DatabasePermissionManager
-from agent_system.core.events.event_types import EntityType
+from .base import MCPServer, PermissionError
+from core.entities.entity_manager import EntityManager
+from core.permissions.manager import DatabasePermissionManager
+from core.events.event_types import EntityType
 
 logger = logging.getLogger(__name__)
 
@@ -20,40 +20,19 @@ class EntityManagerMCP(MCPServer):
         self.entity_manager = entity_manager
         
     def register_tools(self):
-        """Register all entity management tools."""
-        # Agent Management Tools
-        self.register_tool("get_agent", self.get_agent)
-        self.register_tool("update_agent", self.update_agent)
+        """Register essential entity management tools."""
+        # Core CRUD operations
+        self.register_tool("create_entity", self.create_entity)
+        self.register_tool("get_entity", self.get_entity)
+        self.register_tool("update_entity", self.update_entity)
+        self.register_tool("delete_entity", self.delete_entity)
+        self.register_tool("list_entities", self.list_entities)
+        
+        # Specialized entity creation
         self.register_tool("create_agent", self.create_agent)
-        self.register_tool("list_agents", self.list_agents)
-        
-        # Task Management Tools
-        self.register_tool("get_task", self.get_task)
-        self.register_tool("update_task", self.update_task)
         self.register_tool("create_task", self.create_task)
-        self.register_tool("get_task_dependencies", self.get_task_dependencies)
-        
-        # Process Management Tools
-        self.register_tool("get_process", self.get_process)
-        self.register_tool("list_processes", self.list_processes)
-        
-        # Document Management Tools
-        self.register_tool("get_document", self.get_document)
+        self.register_tool("update_task", self.update_task)
         self.register_tool("create_document", self.create_document)
-        self.register_tool("update_document", self.update_document)
-        self.register_tool("search_documents", self.search_documents)
-        
-        # Tool Management Tools
-        self.register_tool("get_tool", self.get_tool)
-        self.register_tool("list_tools", self.list_tools_entities)
-        
-        # Event Management Tools
-        self.register_tool("get_events", self.get_events)
-        self.register_tool("log_event", self.log_event)
-        
-        # Relationship Management Tools
-        self.register_tool("create_relationship", self.create_relationship)
-        self.register_tool("get_relationships", self.get_relationships)
         
     # Agent Management Tools
     
@@ -110,7 +89,7 @@ class EntityManagerMCP(MCPServer):
         if not await self.permission_manager.check_permission(agent_type, task_id, "write", "agent"):
             raise PermissionError("Insufficient permissions to create agent")
         
-        from agent_system.core.entities.agent_entity import AgentEntity
+        from core.entities.agent_entity import AgentEntity
         
         agent = AgentEntity(
             id=0,  # Will be assigned by database
@@ -217,7 +196,7 @@ class EntityManagerMCP(MCPServer):
         if not await self.permission_manager.check_permission(agent_type, task_id, "write", "task"):
             raise PermissionError("Insufficient permissions to create task")
         
-        from agent_system.core.entities.task_entity import TaskEntity
+        from core.entities.task_entity import TaskEntity
         
         task = TaskEntity(
             id=0,  # Will be assigned by database
@@ -338,7 +317,7 @@ class EntityManagerMCP(MCPServer):
         if not await self.permission_manager.check_permission(agent_type, task_id, "write", "document"):
             raise PermissionError("Insufficient permissions to create document")
         
-        from agent_system.core.entities.context_entity import ContextEntity
+        from core.entities.context_entity import ContextEntity
         
         doc = ContextEntity(
             id=0,  # Will be assigned by database
@@ -546,3 +525,140 @@ class EntityManagerMCP(MCPServer):
             }
             for rel in relationships
         ]
+    
+    # Core CRUD operations
+    
+    async def create_entity(self, entity_type: str, data: Dict[str, Any],
+                          agent_type: str = None, task_id: int = None) -> int:
+        """Create any type of entity."""
+        # Check permissions
+        if not await self.permission_manager.check_permission(agent_type, task_id, "write", entity_type.lower()):
+            raise PermissionError(f"Insufficient permissions to create {entity_type}")
+        
+        # Delegate to specific creation methods based on type
+        if entity_type.upper() == "AGENT":
+            return await self.create_agent(data, agent_type, task_id)
+        elif entity_type.upper() == "TASK":
+            return await self.create_task(data.get("instruction", ""), 
+                                        data.get("parent_task_id"), 
+                                        agent_type, task_id, **data)
+        elif entity_type.upper() == "CONTEXT":
+            return await self.create_document(data.get("name", ""),
+                                            data.get("content", ""),
+                                            data.get("metadata", {}),
+                                            agent_type, task_id)
+        else:
+            raise ValueError(f"Unsupported entity type: {entity_type}")
+    
+    async def get_entity(self, entity_type: str, entity_id: int,
+                       agent_type: str = None, task_id: int = None) -> Dict[str, Any]:
+        """Get any type of entity by ID."""
+        # Check permissions
+        if not await self.permission_manager.check_permission(agent_type, task_id, "read", entity_type.lower()):
+            raise PermissionError(f"Insufficient permissions to read {entity_type}")
+        
+        # Delegate to specific get methods based on type
+        if entity_type.upper() == "AGENT":
+            return await self.get_agent(entity_id, agent_type, task_id)
+        elif entity_type.upper() == "TASK":
+            return await self.get_task(entity_id, agent_type, task_id)
+        elif entity_type.upper() == "CONTEXT":
+            return await self.get_document(entity_id, agent_type, task_id)
+        elif entity_type.upper() == "PROCESS":
+            return await self.get_process(entity_id, agent_type, task_id)
+        elif entity_type.upper() == "TOOL":
+            return await self.get_tool(entity_id, agent_type, task_id)
+        else:
+            # For other types, get directly from entity manager
+            entity = await self.entity_manager.get_entity(EntityType[entity_type.upper()], entity_id)
+            if entity:
+                return {
+                    "id": entity.id,
+                    "name": entity.name,
+                    "description": entity.description,
+                    "metadata": entity.metadata
+                }
+            return None
+    
+    async def update_entity(self, entity_type: str, entity_id: int, updates: Dict[str, Any],
+                          agent_type: str = None, task_id: int = None) -> bool:
+        """Update any type of entity."""
+        # Check permissions
+        if not await self.permission_manager.check_permission(agent_type, task_id, "write", entity_type.lower()):
+            raise PermissionError(f"Insufficient permissions to update {entity_type}")
+        
+        # Delegate to specific update methods based on type
+        if entity_type.upper() == "AGENT":
+            return await self.update_agent(entity_id, updates, agent_type, task_id)
+        elif entity_type.upper() == "TASK":
+            return await self.update_task(entity_id, updates, agent_type, task_id)
+        elif entity_type.upper() == "CONTEXT":
+            return await self.update_document(entity_id, updates, agent_type, task_id)
+        else:
+            # For other types, update directly via entity manager
+            entity = await self.entity_manager.get_entity(EntityType[entity_type.upper()], entity_id)
+            if not entity:
+                raise ValueError(f"{entity_type} {entity_id} not found")
+            
+            # Update basic fields
+            for field in ["name", "description", "metadata"]:
+                if field in updates:
+                    setattr(entity, field, updates[field])
+            
+            return await self.entity_manager.update_entity(entity)
+    
+    async def delete_entity(self, entity_type: str, entity_id: int,
+                          agent_type: str = None, task_id: int = None) -> bool:
+        """Delete any type of entity."""
+        # Check permissions
+        if not await self.permission_manager.check_permission(agent_type, task_id, "delete", entity_type.lower()):
+            raise PermissionError(f"Insufficient permissions to delete {entity_type}")
+        
+        # Use entity manager to delete
+        success = await self.entity_manager.delete_entity(EntityType[entity_type.upper()], entity_id)
+        
+        if success:
+            logger.info(f"Deleted {entity_type} {entity_id}")
+            
+        return success
+    
+    async def list_entities(self, entity_type: str, filters: Optional[Dict[str, Any]] = None,
+                          agent_type: str = None, task_id: int = None) -> List[Dict[str, Any]]:
+        """List entities of any type."""
+        # Check permissions
+        if not await self.permission_manager.check_permission(agent_type, task_id, "read", entity_type.lower()):
+            raise PermissionError(f"Insufficient permissions to list {entity_type}")
+        
+        # Delegate to specific list methods based on type
+        if entity_type.upper() == "AGENT":
+            return await self.list_agents(filters, agent_type, task_id)
+        elif entity_type.upper() == "PROCESS":
+            return await self.list_processes(filters.get("category") if filters else None, agent_type, task_id)
+        elif entity_type.upper() == "TOOL":
+            return await self.list_tools_entities(filters.get("category") if filters else None, agent_type, task_id)
+        else:
+            # For other types, get all from entity manager
+            entities = await self.entity_manager.get_entities_by_type(EntityType[entity_type.upper()])
+            
+            # Apply basic filters
+            if filters:
+                filtered = []
+                for entity in entities:
+                    match = True
+                    for key, value in filters.items():
+                        if hasattr(entity, key) and getattr(entity, key) != value:
+                            match = False
+                            break
+                    if match:
+                        filtered.append(entity)
+                entities = filtered
+            
+            return [
+                {
+                    "id": entity.id,
+                    "name": entity.name,
+                    "description": entity.description,
+                    "created_at": entity.created_at.isoformat() if hasattr(entity, 'created_at') and entity.created_at else None
+                }
+                for entity in entities
+            ]

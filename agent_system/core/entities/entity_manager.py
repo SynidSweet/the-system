@@ -6,15 +6,15 @@ from datetime import datetime
 import json
 import aiosqlite
 
-from agent_system.core.entities.base import Entity, EntityState
-from agent_system.core.entities.agent_entity import AgentEntity
-from agent_system.core.entities.task_entity import TaskEntity, TaskState
-from agent_system.core.entities.tool_entity import ToolEntity, ToolCategory
-from agent_system.core.entities.context_entity import ContextEntity, ContextCategory, ContextFormat
-from agent_system.core.entities.process_entity import ProcessEntity, ProcessType
-from agent_system.core.entities.event_entity import EventEntity
-from agent_system.core.events.event_types import EntityType, EventType
-from agent_system.core.events.event_manager import EventManager
+from .base import Entity, EntityState
+from .agent_entity import AgentEntity
+from .task_entity import TaskEntity, TaskState
+from .tool_entity import ToolEntity, ToolCategory
+from .context_entity import ContextEntity, ContextCategory, ContextFormat
+from .process_entity import ProcessEntity, ProcessType
+from .event_entity import EventEntity
+from ..events.event_types import EntityType, EventType
+from ..events.event_manager import EventManager
 
 
 class EntityManager:
@@ -56,7 +56,7 @@ class EntityManager:
             try:
                 # Insert into entities table
                 cursor = await db.execute("""
-                    INSERT INTO entities (entity_type, entity_id, name, version, state, metadata, created_at, updated_at)
+                    INSERT INTO entities (entity_type, entity_id, name, version, status, metadata, created_at, updated_at)
                     VALUES (?, (SELECT COALESCE(MAX(entity_id), 0) + 1 FROM entities WHERE entity_type = ?), ?, ?, ?, ?, ?, ?)
                 """, (
                     entity_type.value,
@@ -104,7 +104,7 @@ class EntityManager:
                         EventType.ENTITY_CREATED,
                         entity_type,
                         entity_id,
-                        name=name
+                        event_data={"name": name}
                     )
                 
                 # Cache the entity
@@ -178,7 +178,7 @@ class EntityManager:
                 # Update entities table
                 await db.execute("""
                     UPDATE entities 
-                    SET name = ?, version = ?, state = ?, metadata = ?, updated_at = ?
+                    SET name = ?, version = ?, status = ?, metadata = ?, updated_at = ?
                     WHERE entity_type = ? AND entity_id = ?
                 """, (
                     updates.get('name', entity.name),
@@ -216,7 +216,7 @@ class EntityManager:
                         EventType.ENTITY_UPDATED,
                         entity.entity_type,
                         entity.entity_id,
-                        updates=updates
+                        event_data={"updates": updates}
                     )
                 
                 # Update cache

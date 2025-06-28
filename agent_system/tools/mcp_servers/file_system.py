@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from agent_system.tools.mcp_servers.base import MCPServer
-from agent_system.core.permissions.manager import DatabasePermissionManager
+from .base import MCPServer
+from core.permissions.manager import DatabasePermissionManager
 
 
 class FileSystemMCPServer(MCPServer):
@@ -39,7 +39,7 @@ class FileSystemMCPServer(MCPServer):
         permission_manager: DatabasePermissionManager,
         allowed_paths: List[str]
     ):
-        super().__init__(permission_manager)
+        super().__init__("filesystem", permission_manager)
         
         # Convert to absolute paths and validate
         self.allowed_paths = []
@@ -57,6 +57,17 @@ class FileSystemMCPServer(MCPServer):
         self.read_operations = {"read_file", "list_directory", "get_file_info"}
         self.write_operations = {"write_file", "create_directory", "delete_file", 
                                 "copy_file", "move_file"}
+    
+    def register_tools(self):
+        """Register all file system tools."""
+        self.register_tool("read_file", self.read_file)
+        self.register_tool("write_file", self.write_file)
+        self.register_tool("list_directory", self.list_directory)
+        self.register_tool("create_directory", self.create_directory)
+        self.register_tool("delete_file", self.delete_file)
+        self.register_tool("copy_file", self.copy_file)
+        self.register_tool("move_file", self.move_file)
+        self.register_tool("get_file_info", self.get_file_info)
     
     def _is_path_allowed(self, path: str) -> bool:
         """Check if a path is within allowed directories."""

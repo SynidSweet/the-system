@@ -14,6 +14,7 @@ This creates the complete foundation for the self-improving system.
 import asyncio
 import sys
 import os
+import json
 from pathlib import Path
 
 # Add the parent directory to the path
@@ -34,6 +35,67 @@ async def init_database():
     try:
         await db_manager.connect()
         print("✅ Database connection established")
+        
+        # Create the basic schema for seeding
+        schema_sql = """
+        CREATE TABLE IF NOT EXISTS agents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            instruction TEXT,
+            context_documents TEXT DEFAULT '[]',
+            available_tools TEXT DEFAULT '[]',
+            permissions TEXT DEFAULT '[]',
+            constraints TEXT DEFAULT '[]',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS context_documents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            title TEXT,
+            category TEXT DEFAULT 'general',
+            content TEXT,
+            format TEXT DEFAULT 'markdown',
+            version TEXT DEFAULT '1.0.0'
+        );
+        
+        CREATE TABLE IF NOT EXISTS tools (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            description TEXT,
+            category TEXT DEFAULT 'system',
+            implementation TEXT,
+            parameters TEXT DEFAULT '{}',
+            permissions TEXT DEFAULT '[]',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            parent_task_id INTEGER,
+            tree_id INTEGER,
+            agent_id INTEGER,
+            instruction TEXT,
+            status TEXT DEFAULT 'created',
+            result TEXT DEFAULT '{}',
+            metadata TEXT DEFAULT '{}',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id INTEGER,
+            message_type TEXT,
+            content TEXT,
+            metadata TEXT DEFAULT '{}',
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+        
+        await db_manager.execute_script(schema_sql)
         print("✅ Database schema created")
         return True
     except Exception as e:
@@ -43,9 +105,9 @@ async def init_database():
 
 async def seed_all_agents():
     """Seed all 9 core agents as specified in the launch plan"""
-    print("🤖 Seeding all 9 core agents...")
+    print("🤖 Seeding all 8 core agents...")
     
-    from core.models import Agent, AgentPermissions
+    from core.models import AgentPermissions
     
     agents_config = [
         {
@@ -188,16 +250,24 @@ Implement changes that make the system smarter and more capable over time.""",
                 print(f"  ⚠️  Agent '{agent_config['name']}' already exists, skipping")
                 continue
             
+            # Convert permissions to JSON string if it's an object
+            permissions = agent_config.get("permissions", [])
+            if hasattr(permissions, 'model_dump'):
+                permissions = json.dumps(permissions.model_dump())
+            elif isinstance(permissions, list):
+                permissions = json.dumps(permissions)
+            else:
+                permissions = "[]"
+            
             # Create agent
-            agent = Agent(
+            agent_id = await database.agents.create(
                 name=agent_config["name"],
                 instruction=agent_config["instruction"],
-                context_documents=agent_config["context_documents"],
-                available_tools=agent_config["available_tools"],
-                permissions=agent_config["permissions"]
+                context_documents=json.dumps(agent_config["context_documents"]),
+                available_tools=json.dumps(agent_config["available_tools"]),
+                permissions=permissions,
+                constraints=json.dumps(agent_config.get("constraints", []))
             )
-            
-            agent_id = await database.agents.create(agent)
             print(f"  ✅ Created agent '{agent_config['name']}' (ID: {agent_id})")
             created_count += 1
             
@@ -212,7 +282,6 @@ async def seed_context_documents():
     """Seed context documents from /docs and additional required documents"""
     print("📚 Seeding context documents...")
     
-    from core.models import ContextDocument
     
     # First, add the existing docs files
     docs_dir = Path(__file__).parent.parent.parent / "docs"
@@ -230,14 +299,14 @@ async def seed_context_documents():
                     print(f"  ⚠️  Document '{name}' already exists, skipping")
                     continue
                 
-                doc = ContextDocument(
+                doc_id = await database.context_documents.create(
                     name=name,
                     title=doc_file.name.replace('_', ' ').title(),
                     category="system",
-                    content=content
+                    content=content,
+                    format="markdown",
+                    version="1.0.0"
                 )
-                
-                doc_id = await database.context_documents.create(doc)
                 print(f"  ✅ Added /docs/{doc_file.name} as '{name}' (ID: {doc_id})")
                 docs_added += 1
                 
@@ -820,14 +889,14 @@ MCP is an open protocol that enables seamless integration between LLM applicatio
                 print(f"  ⚠️  Document '{doc_config['name']}' already exists, skipping")
                 continue
             
-            doc = ContextDocument(
+            doc_id = await database.context_documents.create(
                 name=doc_config["name"],
                 title=doc_config["title"], 
                 category=doc_config["category"],
-                content=doc_config["content"]
+                content=doc_config["content"],
+                format="markdown",
+                version="1.0.0"
             )
-            
-            doc_id = await database.context_documents.create(doc)
             print(f"  ✅ Created document '{doc_config['name']}' (ID: {doc_id})")
             additional_added += 1
             
@@ -842,7 +911,6 @@ async def seed_tools():
     """Seed all internal and external tools"""
     print("🔧 Seeding all MCP tools...")
     
-    from core.models import Tool, ToolImplementation
     
     # Register tools with the registry first
     try:
@@ -868,11 +936,11 @@ async def seed_tools():
             "name": "list_agents",
             "description": "Query available agent configurations",
             "category": "system",
-            "implementation": ToolImplementation(
-                type="python_class",
-                module_path="tools.system_tools.internal_tools",
-                class_name="ListAgentsTool"
-            ),
+            "implementation": json.dumps({
+                "type": "python_class",
+                "module_path": "tools.system_tools.internal_tools",
+                "class_name": "ListAgentsTool"
+            }),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -886,11 +954,11 @@ async def seed_tools():
             "name": "list_documents", 
             "description": "Query available context documents",
             "category": "system",
-            "implementation": ToolImplementation(
-                type="python_class",
-                module_path="tools.system_tools.internal_tools",
-                class_name="ListDocumentsTool"
-            ),
+            "implementation": json.dumps({
+                "type": "python_class",
+                "module_path":"tools.system_tools.internal_tools",
+                "class_name":"ListDocumentsTool"
+            }),
             "parameters": {
                 "type": "object", 
                 "properties": {
@@ -905,11 +973,11 @@ async def seed_tools():
             "name": "list_optional_tools",
             "description": "Query tools registry",
             "category": "system", 
-            "implementation": ToolImplementation(
-                type="python_class",
-                module_path="tools.system_tools.internal_tools", 
-                class_name="ListOptionalToolsTool"
-            ),
+            "implementation": json.dumps({
+                "type": "python_class",
+                "module_path":"tools.system_tools.internal_tools", 
+                "class_name":"ListOptionalToolsTool"
+            }),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -924,10 +992,10 @@ async def seed_tools():
             "name": "use_terminal",
             "description": "Execute shell commands",
             "category": "system",
-            "implementation": ToolImplementation(
-                type="mcp_integration",
-                config={"type": "shell_access", "permissions": "restricted"}
-            ),
+            "implementation": json.dumps({
+                "type": "mcp_integration",
+                "config":{"type": "shell_access", "permissions": "restricted"}
+            }),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -943,10 +1011,10 @@ async def seed_tools():
             "name": "github_operations",
             "description": "Git operations and repository management", 
             "category": "system",
-            "implementation": ToolImplementation(
-                type="mcp_integration",
-                config={"type": "git_integration", "permissions": "full"}
-            ),
+            "implementation": json.dumps({
+                "type": "mcp_integration",
+                "config":{"type": "git_integration", "permissions": "full"}
+            }),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -962,11 +1030,11 @@ async def seed_tools():
             "name": "query_database",
             "description": "Direct SQLite database queries",
             "category": "system",
-            "implementation": ToolImplementation(
-                type="python_class",
-                module_path="tools.system_tools.internal_tools",
-                class_name="QueryDatabaseTool" 
-            ),
+            "implementation": json.dumps({
+                "type": "python_class",
+                "module_path":"tools.system_tools.internal_tools",
+                "class_name":"QueryDatabaseTool" 
+            }),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -981,11 +1049,11 @@ async def seed_tools():
             "name": "send_message_to_user",
             "description": "Send messages directly to the user for questions, updates, verification, or communication",
             "category": "system",
-            "implementation": ToolImplementation(
-                type="python_class",
-                module_path="tools.system_tools.user_communication",
-                class_name="SendMessageToUserTool"
-            ),
+            "implementation": json.dumps({
+                "type": "python_class",
+                "module_path":"tools.system_tools.user_communication",
+                "class_name":"SendMessageToUserTool"
+            }),
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -1034,16 +1102,14 @@ async def seed_tools():
                 print(f"  ⚠️  Tool '{tool_config['name']}' already exists in DB, skipping")
                 continue
             
-            tool = Tool(
+            tool_id = await database.tools.create(
                 name=tool_config["name"],
                 description=tool_config["description"], 
                 category=tool_config["category"],
-                implementation=tool_config["implementation"],
-                parameters=tool_config["parameters"],
-                permissions=tool_config["permissions"]
+                implementation=tool_config["implementation"],  # Already JSON string
+                parameters=json.dumps(tool_config["parameters"]),
+                permissions=json.dumps(tool_config["permissions"])
             )
-            
-            tool_id = await database.tools.create(tool)
             print(f"  ✅ Added tool '{tool_config['name']}' to database (ID: {tool_id})")
             tools_added += 1
             
@@ -1073,7 +1139,7 @@ async def health_check():
     try:
         expected_agents = [
             "agent_selector", "task_breakdown", "context_addition", "tool_addition",
-            "task_evaluator", "documentation_agent", "summary_agent", "supervisor", "review_agent"
+            "task_evaluator", "documentation_agent", "summary_agent", "review_agent"
         ]
         missing_agents = []
         for agent_name in expected_agents:
@@ -1082,7 +1148,7 @@ async def health_check():
                 missing_agents.append(agent_name)
         
         if not missing_agents:
-            print(f"  ✅ Agents: All 9 core agents present")
+            print(f"  ✅ Agents: All 8 core agents present")
             checks_passed += 1
         else:
             print(f"  ❌ Agents: Missing {missing_agents}")
@@ -1091,7 +1157,7 @@ async def health_check():
     
     # Context documents
     try:
-        docs = await database.context_documents.get_by_names(["system_overview", "agent_registry", "breakdown_guidelines"])
+        docs = await database.context_documents.get_by_names(["agent_registry", "breakdown_guidelines", "project_principles"])
         if len(docs) >= 3:
             print(f"  ✅ Context: Core documents available")
             checks_passed += 1
@@ -1167,10 +1233,10 @@ async def main():
     
     print("=" * 60)
     print("🎉 Complete system seeding successful!")
-    print("🤖 All 9 core agents, context documents, and tools are ready.")
+    print("🤖 All 8 core agents, context documents, and tools are ready.")
     print("")
     print("System includes:")
-    print("  • 9 specialized agents with detailed instructions")
+    print("  • 8 specialized agents with detailed instructions")
     print("  • Complete documentation from /docs + additional contexts")
     print("  • Core MCP toolkit (7 essential tools)")
     print("  • Internal tools (list_agents, list_documents, etc.)")

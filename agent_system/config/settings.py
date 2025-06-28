@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     max_tool_calls_per_task: int = 50
     memory_limit_mb: int = 1024
     
+    # CORS Configuration
+    allowed_origins: str = "http://localhost:3000"
+    
     class Config:
         env_file = ".env"
         case_sensitive = False

@@ -15,22 +15,28 @@ function ToolBrowser({ apiBaseUrl }) {
   const fetchTools = async () => {
     try {
       const response = await fetch(`${apiBaseUrl}/system/tools`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
-      setTools(data.tools);
+      const tools = data.tools || {};
+      setTools(tools);
       
       // Select first category and tool by default
-      const categories = Object.keys(data.tools);
+      const categories = Object.keys(tools);
       if (categories.length > 0) {
         const firstCategory = categories[0];
         setSelectedCategory(firstCategory);
-        if (data.tools[firstCategory].length > 0) {
-          setSelectedTool(data.tools[firstCategory][0]);
+        if (tools[firstCategory] && tools[firstCategory].length > 0) {
+          setSelectedTool(tools[firstCategory][0]);
         }
       }
       
       setLoading(false);
     } catch (err) {
+      console.error('Error fetching tools:', err);
       setError('Failed to load tools');
+      setTools({});
       setLoading(false);
     }
   };
@@ -118,7 +124,7 @@ function ToolBrowser({ apiBaseUrl }) {
                 {renderParameters(selectedTool.parameters)}
               </div>
 
-              {selectedTool.permissions && selectedTool.permissions.length > 0 && (
+                      {selectedTool.permissions && Array.isArray(selectedTool.permissions) && selectedTool.permissions.length > 0 && (
                 <div className="field-group">
                   <label>Required Permissions</label>
                   <div className="permissions-list">

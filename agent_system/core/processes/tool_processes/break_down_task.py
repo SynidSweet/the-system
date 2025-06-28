@@ -1,10 +1,10 @@
 """Process triggered when agent calls break_down_task() tool."""
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import logging
 
-from agent_system.core.processes.base import BaseProcess, ProcessResult
-from agent_system.core.runtime.state_machine import TaskState
+from ..base import BaseProcess, ProcessResult
+from ...runtime.state_machine import TaskState
 
 
 logger = logging.getLogger(__name__)

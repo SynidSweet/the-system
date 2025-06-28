@@ -88,5 +88,8 @@ echo ""
 echo "Press Ctrl+C to stop the server"
 echo ""
 
+# Set PYTHONPATH to current directory
+export PYTHONPATH="${PWD}:${PYTHONPATH}"
+
 # Start the FastAPI server
 python -m api.main

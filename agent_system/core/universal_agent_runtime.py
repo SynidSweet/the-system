@@ -50,17 +50,33 @@ class UniversalAgentRuntime:
         """Initialize the agent with task context"""
         try:
             # Load task from database
-            task = await database.tasks.get_by_id(self.task_id)
+            task = await database.tasks.get_by_id(str(self.task_id))
             if not task:
                 raise ValueError(f"Task {self.task_id} not found")
             
-            self.tree_id = task.tree_id
+            self.tree_id = task.get("tree_id", self.task_id)
             
             # Load agent configuration
-            agent = await database.agents.get_by_id(task.agent_id)
+            agent_id = task.get("agent_id")
+            agent = None
+            
+            if agent_id:
+                agent = await database.agents.get_by_id(str(agent_id))
+            
             if not agent:
                 # Try to get agent by name if ID lookup fails
-                agent_name = task.metadata.get('assigned_agent') if task.metadata else None
+                # First check task metadata
+                metadata = task.get("metadata", "{}")
+                if isinstance(metadata, str):
+                    import json
+                    metadata = json.loads(metadata)
+                    
+                agent_name = metadata.get('assigned_agent')
+                
+                # If no assigned agent, default to agent_selector
+                if not agent_name:
+                    agent_name = "agent_selector"
+                
                 if agent_name:
                     agent = await database.agents.get_by_name(agent_name)
                 
@@ -69,48 +85,59 @@ class UniversalAgentRuntime:
             
             # Load context documents
             context_documents = []
-            if agent.context_documents:
+            context_documents_list = agent.get("context_documents", [])
+            if isinstance(context_documents_list, str):
+                import json
+                context_documents_list = json.loads(context_documents_list)
+            
+            if context_documents_list:
                 context_documents = await database.context_documents.get_by_names(
-                    agent.context_documents
+                    context_documents_list
                 )
             
             # Add any additional context from task
-            if task.metadata and task.metadata.get('additional_context'):
+            if metadata and metadata.get('additional_context'):
                 additional_context = await database.context_documents.get_by_names(
-                    task.metadata['additional_context']
+                    metadata['additional_context']
                 )
                 context_documents.extend(additional_context)
             
             # Load available tools
             available_tools = []
-            if agent.available_tools:
+            available_tools_list = agent.get("available_tools", [])
+            if isinstance(available_tools_list, str):
+                import json
+                available_tools_list = json.loads(available_tools_list)
+                
+            if available_tools_list:
                 available_tools = await database.tools.get_by_names(
-                    agent.available_tools
+                    available_tools_list
                 )
             
             # Add any additional tools from task
-            if task.metadata and task.metadata.get('additional_tools'):
+            if metadata and metadata.get('additional_tools'):
                 additional_tools = await database.tools.get_by_names(
-                    task.metadata['additional_tools']
+                    metadata['additional_tools']
                 )
                 available_tools.extend(additional_tools)
             
             # Add MCP tools based on permissions
-            from agent_system.tools.mcp_servers.startup import get_tool_system_manager
+            from tools.mcp_servers.startup import get_tool_system_manager
             tool_system = get_tool_system_manager()
             if tool_system:
                 # Get agent type from task metadata or agent name
-                agent_type = task.metadata.get("agent_type", agent.name)
+                agent_type = metadata.get("agent_type", agent.get("name", "neutral_task_agent"))
                 mcp_tools = await tool_system.get_agent_tools(agent_type, self.task_id)
                 
                 # Create tool objects for MCP tools
                 for tool_name in mcp_tools:
-                    from agent_system.core.models import Tool
+                    from .models import Tool
                     # Create pseudo-tool objects for MCP servers
                     mcp_tool = Tool(
                         id=0,
                         name=tool_name,
                         description=f"MCP Server: {tool_name} - Access to {tool_name} operations",
+                        implementation="mcp",
                         function_name=tool_name,
                         parameters={},
                         returns={}
@@ -118,16 +145,91 @@ class UniversalAgentRuntime:
                     available_tools.append(mcp_tool)
             
             # Load message history
-            message_history = await database.messages.get_by_task_id(self.task_id)
+            message_history = await database.messages.get_by_task_id(str(self.task_id))
+            
+            # Convert dicts to model objects
+            from .models import Task, Agent, ContextDocument, Tool, Message
+            
+            # Convert task dict to Task model
+            task_obj = Task(
+                id=task.get("id"),
+                parent_task_id=task.get("parent_task_id"),
+                tree_id=task.get("tree_id"),
+                agent_id=task.get("agent_id"),
+                instruction=task.get("instruction", ""),
+                status=task.get("status", "created"),
+                result=json.loads(task.get("result", "{}")) if isinstance(task.get("result"), str) else task.get("result"),
+                metadata=metadata,
+                created_at=task.get("created_at"),
+                updated_at=task.get("updated_at")
+            )
+            
+            # Convert agent dict to Agent model
+            agent_obj = Agent(
+                id=agent.get("id"),
+                name=agent.get("name", ""),
+                instruction=agent.get("instruction", ""),
+                context_documents=context_documents_list,
+                available_tools=available_tools_list,
+                permissions=json.loads(agent.get("permissions", "[]")) if isinstance(agent.get("permissions"), str) else agent.get("permissions", []),
+                constraints=json.loads(agent.get("constraints", "[]")) if isinstance(agent.get("constraints"), str) else agent.get("constraints", []),
+                metadata=json.loads(agent.get("metadata", "{}")) if isinstance(agent.get("metadata"), str) else agent.get("metadata", {}),
+                created_at=agent.get("created_at"),
+                updated_at=agent.get("updated_at")
+            )
+            
+            # Convert context documents to model objects
+            context_doc_objs = []
+            for doc in context_documents:
+                context_doc_objs.append(ContextDocument(
+                    id=doc.get("id"),
+                    name=doc.get("name", ""),
+                    title=doc.get("title", ""),
+                    category=doc.get("category", "system"),
+                    content=doc.get("content", ""),
+                    format=doc.get("format", "markdown"),
+                    version=doc.get("version", "1.0.0"),
+                    created_at=doc.get("created_at"),
+                    updated_at=doc.get("updated_at")
+                ))
+            
+            # Convert tools to model objects
+            tool_objs = []
+            for tool in available_tools:
+                if hasattr(tool, 'model_dump'):  # Already a model object (MCP tools)
+                    tool_objs.append(tool)
+                else:
+                    tool_objs.append(Tool(
+                        id=tool.get("id"),
+                        name=tool.get("name", ""),
+                        description=tool.get("description", ""),
+                        function_name=tool.get("function_name", tool.get("name", "")),
+                        parameters=json.loads(tool.get("parameters", "{}")) if isinstance(tool.get("parameters"), str) else tool.get("parameters", {}),
+                        returns=json.loads(tool.get("returns", "{}")) if isinstance(tool.get("returns"), str) else tool.get("returns", {}),
+                        created_at=tool.get("created_at"),
+                        updated_at=tool.get("updated_at")
+                    ))
+            
+            # Convert messages to model objects
+            message_objs = []
+            for msg in message_history:
+                message_objs.append(Message(
+                    id=msg.get("id"),
+                    task_id=msg.get("task_id"),
+                    message_type=msg.get("message_type", "agent_response"),
+                    content=msg.get("content", ""),
+                    metadata=json.loads(msg.get("metadata", "{}")) if isinstance(msg.get("metadata"), str) else msg.get("metadata", {}),
+                    timestamp=msg.get("timestamp")
+                ))
             
             # Create execution context
             self.execution_context = AgentExecutionContext(
-                task=task,
-                agent=agent,
-                context_documents=context_documents,
-                available_tools=available_tools,
-                message_history=message_history,
-                recursion_depth=self._calculate_recursion_depth(task)
+                task=task_obj,
+                agent=agent_obj,
+                context_documents=context_doc_objs,
+                available_tools=tool_objs,
+                parent_context={"recursion_depth": self._calculate_recursion_depth(task)},
+                execution_metadata={"message_history": [msg.model_dump() for msg in message_objs]}
             )
             
             return True
@@ -150,8 +252,10 @@ class UniversalAgentRuntime:
                 EventType.TASK_STARTED,
                 EntityType.TASK,
                 self.task_id,
-                task_instruction=self.execution_context.task.instruction,
-                agent_name=self.execution_context.agent.name
+                event_data={
+                    "task_instruction": self.execution_context.task.instruction,
+                    "agent_name": self.execution_context.agent.name
+                }
             )
             
             # Prepare AI prompt
@@ -160,7 +264,7 @@ class UniversalAgentRuntime:
             # Get AI response
             response = await ai_model_manager.get_response(
                 prompt,
-                model_config=self.execution_context.agent.model_config
+                model_config=self.execution_context.agent.ai_model_config
             )
             
             # Process tool calls
@@ -195,8 +299,10 @@ class UniversalAgentRuntime:
                 EventType.TASK_COMPLETED,
                 EntityType.TASK,
                 self.task_id,
-                result=result.result,
-                execution_time=execution_time,
+                event_data={
+                    "result": result.result,
+                    "execution_time": execution_time
+                },
                 outcome=EventOutcome.SUCCESS
             )
             
@@ -215,8 +321,10 @@ class UniversalAgentRuntime:
                 EventType.TASK_FAILED,
                 EntityType.TASK,
                 self.task_id,
-                error=str(e),
-                execution_time=execution_time,
+                event_data={
+                    "error": str(e),
+                    "execution_time": execution_time
+                },
                 outcome=EventOutcome.FAILURE
             )
             
@@ -324,29 +432,32 @@ Current Task: {context.task.instruction}
             prompt += "\n"
         
         # Add conversation history
-        if context.message_history:
+        message_history = context.execution_metadata.get('message_history', [])
+        if message_history:
             prompt += "Conversation History:\n"
-            for msg in context.message_history[-10:]:  # Last 10 messages
-                if msg.message_type == MessageType.AGENT_RESPONSE:
-                    prompt += f"Assistant: {msg.content}\n"
-                elif msg.message_type == MessageType.TOOL_CALL:
-                    prompt += f"Tool Call: {msg.metadata.get('tool_name', 'unknown')}\n"
-                elif msg.message_type == MessageType.TOOL_RESPONSE:
-                    prompt += f"Tool Result: {msg.content}\n"
+            for msg_dict in message_history[-10:]:  # Last 10 messages
+                msg_type = msg_dict.get('message_type')
+                if msg_type == MessageType.AGENT_RESPONSE:
+                    prompt += f"Assistant: {msg_dict.get('content', '')}\n"
+                elif msg_type == MessageType.TOOL_CALL:
+                    prompt += f"Tool Call: {msg_dict.get('metadata', {}).get('tool_name', 'unknown')}\n"
+                elif msg_type == MessageType.TOOL_RESPONSE:
+                    prompt += f"Tool Result: {msg_dict.get('content', '')}\n"
             prompt += "\n"
         
         # Add recursion depth warning
-        if context.recursion_depth > 5:
-            prompt += f"\nWARNING: You are at recursion depth {context.recursion_depth}. Consider completing soon to avoid infinite loops.\n"
+        recursion_depth = context.parent_context.get('recursion_depth', 0) if context.parent_context else 0
+        if recursion_depth > 5:
+            prompt += f"\nWARNING: You are at recursion depth {recursion_depth}. Consider completing soon to avoid infinite loops.\n"
         
         return prompt
     
-    def _calculate_recursion_depth(self, task: Task) -> int:
+    def _calculate_recursion_depth(self, task: Dict[str, Any]) -> int:
         """Calculate the recursion depth of the current task"""
         depth = 0
         current_task = task
         
-        while current_task.parent_task_id:
+        while current_task.get("parent_task_id"):
             depth += 1
             if depth > 10:  # Safety limit
                 break
@@ -407,15 +518,13 @@ Current Task: {context.task.instruction}
         """Log a message to the database"""
         self.messages_logged += 1
         
-        message = Message(
-            task_id=self.task_id,
+        await database.messages.create(
+            task_id=str(self.task_id),
             message_type=message_type,
             content=content,
             metadata=metadata or {},
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now().isoformat()
         )
-        
-        await database.messages.create(message)
     
     async def _broadcast_message(self, ws_message: WebSocketMessage):
         """Broadcast a message through websocket"""

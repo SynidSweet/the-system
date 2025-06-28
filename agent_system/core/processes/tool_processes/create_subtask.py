@@ -1,10 +1,10 @@
 """Process triggered when agent calls create_subtask() tool."""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import logging
 
-from agent_system.core.processes.base import BaseProcess, ProcessResult
-from agent_system.core.runtime.state_machine import TaskState
+from ..base import BaseProcess, ProcessResult
+from ...runtime.state_machine import TaskState
 
 
 logger = logging.getLogger(__name__)

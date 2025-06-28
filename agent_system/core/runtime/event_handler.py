@@ -3,11 +3,11 @@
 import logging
 from typing import Dict, Any, TYPE_CHECKING
 
-from agent_system.core.runtime.state_machine import TaskState
-from agent_system.core.events.event_types import EventType, EntityType
+from .state_machine import TaskState
+from ..events.event_types import EventType, EntityType
 
 if TYPE_CHECKING:
-    from agent_system.core.runtime.engine import RuntimeEngine, RuntimeEvent
+    from .engine import RuntimeEngine, RuntimeEvent
 
 
 logger = logging.getLogger(__name__)
@@ -23,6 +23,7 @@ class RuntimeEventHandler:
         self.handlers = {
             "task_created": self.on_task_created,
             "task_state_changed": self.on_task_state_changed,
+            "execute_process": self.on_execute_process,
             "process_completed": self.on_process_completed,
             "agent_response_received": self.on_agent_response,
             "tool_call_made": self.on_tool_call,
@@ -56,12 +57,24 @@ class RuntimeEventHandler:
         await self.runtime.update_task_state(task_id, TaskState.PROCESS_ASSIGNED)
         
         # Trigger process execution (this will be implemented with process system)
-        await self.runtime.queue_event({
-            "event_type": "execute_process",
-            "task_id": task_id,
-            "data": {"process": process_name},
-            "timestamp": event.timestamp
-        })
+        from .engine import RuntimeEvent
+        await self.runtime.queue_event(RuntimeEvent(
+            event_type="execute_process",
+            task_id=task_id,
+            data={"process": process_name},
+            timestamp=event.timestamp
+        ))
+    
+    async def on_execute_process(self, event: 'RuntimeEvent'):
+        """Handle process execution event."""
+        task_id = event.task_id
+        process_name = event.data.get("process", "neutral_task")
+        
+        logger.debug(f"Executing process {process_name} for task {task_id}")
+        
+        # For now, just move the task to READY_FOR_AGENT state
+        # In a full implementation, this would execute the actual process
+        await self.runtime.update_task_state(task_id, TaskState.READY_FOR_AGENT)
     
     async def on_task_state_changed(self, event: 'RuntimeEvent'):
         """Handle task state change event."""

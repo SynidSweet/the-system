@@ -5,8 +5,8 @@ from collections import defaultdict, deque
 import asyncio
 from datetime import datetime
 
-from agent_system.core.events.event_types import EventType, EntityType
-from agent_system.core.events.event_manager import EventManager
+from ..events.event_types import EventType, EntityType
+from ..events.event_manager import EventManager
 
 
 class DependencyNode:
@@ -38,10 +38,10 @@ class DependencyGraph:
                 
                 if self.event_manager:
                     await self.event_manager.log_event(
-                        EventType.DEPENDENCY_ADDED,
+                        EventType.ENTITY_CREATED,
                         EntityType.TASK,
                         task_id,
-                        action="task_added_to_graph"
+                        event_data={"action": "task_added_to_graph"}
                     )
             
             return self.nodes[task_id]
@@ -59,11 +59,13 @@ class DependencyGraph:
             if await self._would_create_cycle(task_id, depends_on):
                 if self.event_manager:
                     await self.event_manager.log_event(
-                        EventType.DEPENDENCY_FAILED,
+                        EventType.TASK_FAILED,
                         EntityType.TASK,
                         task_id,
-                        reason="Would create circular dependency",
-                        depends_on=depends_on
+                        event_data={
+                            "reason": "Would create circular dependency",
+                            "depends_on": depends_on
+                        }
                     )
                 return False
             
@@ -73,10 +75,10 @@ class DependencyGraph:
             
             if self.event_manager:
                 await self.event_manager.log_event(
-                    EventType.DEPENDENCY_ADDED,
+                    EventType.ENTITY_UPDATED,
                     EntityType.TASK,
                     task_id,
-                    depends_on=depends_on
+                    event_data={"action": "dependency_added", "depends_on": depends_on}
                 )
             
             return True
@@ -130,11 +132,13 @@ class DependencyGraph:
             
             if self.event_manager:
                 await self.event_manager.log_event(
-                    EventType.DEPENDENCY_FAILED,
+                    EventType.TASK_FAILED,
                     EntityType.TASK,
                     task_id,
-                    reason=reason,
-                    blocked_tasks=blocked_tasks
+                    event_data={
+                        "reason": reason,
+                        "blocked_tasks": blocked_tasks
+                    }
                 )
             
             return blocked_tasks

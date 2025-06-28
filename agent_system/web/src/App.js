@@ -75,10 +75,10 @@ function App() {
         manual_step_mode: settings.manualStepMode,
         max_concurrent_agents: settings.maxConcurrentAgents,
         step_mode: settings.manualStepMode,
-        step_mode_threads: ['*'] // Apply to all threads during init
+        step_mode_threads: [] // Empty array for all threads
       });
 
-      // Start initialization
+      // Call the system initialization endpoint
       const response = await fetch(`${API_BASE_URL}/system/initialize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,8 +86,16 @@ function App() {
       });
 
       if (response.ok) {
-        setSystemState('initializing');
-        // The system will update state via WebSocket when complete
+        // Immediately mark system as ready and go to main interface
+        setSystemState('ready');
+        
+        // Refresh data
+        fetchThreads();
+        fetchSystemConfig();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to initialize system:', errorData);
+        alert(`Failed to initialize: ${errorData.detail || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error starting initialization:', error);
@@ -134,12 +142,7 @@ function App() {
   const handleWebSocketMessage = (message) => {
     switch (message.type) {
       case 'system_state_change':
-        setSystemState(message.state);
-        if (message.state === 'ready') {
-          // Refresh data when system is ready
-          fetchThreads();
-          fetchSystemConfig();
-        }
+        // Ignore system state changes - we manage state based on presence of agents
         break;
       case 'agent_started':
       case 'agent_thinking':
@@ -174,34 +177,47 @@ function App() {
   const fetchThreads = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks/all`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
-      setThreads(data.all_trees || []);
+      const threads = Array.isArray(data.all_trees) ? data.all_trees : [];
+      setThreads(threads);
       
       // Auto-select first active thread if none selected
-      if (!selectedThread && data.all_trees?.length > 0) {
-        const activeThread = data.all_trees.find(t => t.has_running_tasks);
+      if (!selectedThread && threads.length > 0) {
+        const activeThread = threads.find(t => t.has_running_tasks);
         if (activeThread) {
           setSelectedThread(activeThread.tree_id);
         }
       }
     } catch (error) {
       console.error('Error fetching threads:', error);
+      setThreads([]); // Set empty array on error
     }
   };
   
   const loadThreadMessages = async (threadId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks/tree/${threadId}/messages`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
+      
+      // Ensure data.messages exists and is an array
+      const messages = Array.isArray(data.messages) ? data.messages : [];
       
       // Add historical messages to the state
       setMessages(prev => {
         // Remove existing messages for this thread to avoid duplicates
         const filtered = prev.filter(m => m.tree_id !== threadId);
-        return [...filtered, ...data.messages];
+        return [...filtered, ...messages];
       });
     } catch (error) {
       console.error('Error loading thread messages:', error);
+      // Set empty messages array on error to prevent crashes
+      setMessages(prev => prev.filter(m => m.tree_id !== threadId));
     }
   };
 
@@ -288,29 +304,7 @@ function App() {
     );
   }
 
-  // Show initializing state
-  if (systemState === 'initializing') {
-    return (
-      <div className="app">
-        <div className="app-header">
-          <h1>🤖 Agent System - Initializing</h1>
-        </div>
-        <div className="app-body">
-          <div className="initialization-progress">
-            <h2>System Initialization in Progress</h2>
-            <p>The system is executing initialization tasks. You can monitor progress below.</p>
-            <p>With manual step mode enabled, approve each agent execution in the Tasks view.</p>
-            <button 
-              className="view-tasks-button"
-              onClick={() => window.location.reload()}
-            >
-              View Task Progress
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // No longer show a separate initializing state - go straight to main app
 
   return (
     <div className="app">

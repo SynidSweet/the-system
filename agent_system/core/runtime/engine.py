@@ -6,13 +6,13 @@ from datetime import datetime
 from dataclasses import dataclass
 import logging
 
-from agent_system.core.runtime.state_machine import TaskState, TaskStateMachine
-from agent_system.core.runtime.dependency_graph import DependencyGraph
-from agent_system.core.runtime.event_handler import RuntimeEventHandler
-from agent_system.core.events.event_manager import EventManager
-from agent_system.core.events.event_types import EventType, EntityType
-from agent_system.core.entities.entity_manager import EntityManager
-from agent_system.core.entities.task_entity import TaskEntity
+from .state_machine import TaskState, TaskStateMachine
+from .dependency_graph import DependencyGraph
+from .event_handler import RuntimeEventHandler
+from ..events.event_manager import EventManager
+from ..events.event_types import EventType, EntityType
+from ..entities.entity_manager import EntityManager
+from ..entities.task_entity import TaskEntity
 
 
 logger = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ class RuntimeEngine:
             EventType.RUNTIME_STARTED,
             EntityType.SYSTEM,
             0,
-            settings=self.settings.__dict__
+            event_data={"settings": self.settings.__dict__}
         )
     
     async def stop(self):
@@ -140,10 +140,10 @@ class RuntimeEngine:
             except Exception as e:
                 logger.error(f"Error in event loop: {e}", exc_info=True)
                 await self.event_manager.log_event(
-                    EventType.RUNTIME_ERROR,
+                    EventType.SYSTEM_ERROR,
                     EntityType.SYSTEM,
                     0,
-                    error=str(e)
+                    event_data={"error": str(e)}
                 )
         
         logger.info("Runtime event loop stopped")
@@ -155,11 +155,14 @@ class RuntimeEngine:
         except Exception as e:
             logger.error(f"Error handling event {event.event_type}: {e}", exc_info=True)
             await self.event_manager.log_event(
-                EventType.EVENT_PROCESSING_FAILED,
+                EventType.SYSTEM_ERROR,
                 EntityType.TASK,
                 event.task_id,
-                event_type=event.event_type,
-                error=str(e)
+                event_data={
+                    "event_type": event.event_type,
+                    "error": str(e),
+                    "context": "event_processing_failed"
+                }
             )
     
     async def _check_task_progression(self):
@@ -276,7 +279,7 @@ class RuntimeEngine:
         """Execute the actual agent call."""
         try:
             # Import here to avoid circular imports
-            from agent_system.core.universal_agent_runtime import UniversalAgentRuntime
+            from ..universal_agent_runtime import UniversalAgentRuntime
             
             # Create and initialize agent
             agent = UniversalAgentRuntime(task_id, self.event_manager)

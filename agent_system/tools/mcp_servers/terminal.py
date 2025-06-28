@@ -16,8 +16,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Set
 from datetime import datetime
 
-from agent_system.tools.mcp_servers.base import MCPServer
-from agent_system.core.permissions.manager import DatabasePermissionManager
+from .base import MCPServer
+from core.permissions.manager import DatabasePermissionManager
 
 
 class TerminalMCPServer(MCPServer):
@@ -73,7 +73,7 @@ class TerminalMCPServer(MCPServer):
         max_output_size: int = 1024 * 1024,  # 1MB
         default_timeout: int = 30  # seconds
     ):
-        super().__init__(permission_manager)
+        super().__init__("terminal", permission_manager)
         
         # Set allowed directories
         self.allowed_directories = []
@@ -401,6 +401,21 @@ class TerminalMCPServer(MCPServer):
                 "success": False,
                 "error": f"Validation error: {str(e)}"
             }
+    
+    def register_tools(self):
+        """Register terminal tools."""
+        self.register_tool("execute_command", self.execute_command)
+        self.register_tool("list_allowed_commands", self.list_allowed_commands)
+        self.register_tool("get_working_directory", self.get_working_directory)
+        self.register_tool("change_directory", self.change_directory)
+    
+    async def list_allowed_commands(self, agent_type: str = None, task_id: int = None) -> List[str]:
+        """List all allowed commands."""
+        return sorted(list(self.command_whitelist))
+    
+    async def get_working_directory(self, agent_type: str = None, task_id: int = None) -> str:
+        """Get current working directory."""
+        return str(self.current_directory)
     
     @property
     def name(self) -> str:

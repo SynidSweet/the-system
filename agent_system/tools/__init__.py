@@ -1,7 +1,7 @@
 """Tool initialization and registration"""
 
-from tools.base_tool import tool_registry
-from tools.core_mcp.core_tools import (
+from .base_tool import tool_registry
+from .core_mcp.core_tools import (
     BreakDownTaskTool,
     StartSubtaskTool, 
     RequestContextTool,
@@ -9,13 +9,13 @@ from tools.core_mcp.core_tools import (
     EndTaskTool,
     FlagForReviewTool
 )
-from tools.system_tools.internal_tools import (
+from .system_tools.internal_tools import (
     ListAgentsTool,
     ListDocumentsTool,
     ListOptionalToolsTool,
     QueryDatabaseTool
 )
-from tools.system_tools.user_communication import SendMessageToUserTool
+from .system_tools.user_communication import SendMessageToUserTool
 
 
 def initialize_tools():
