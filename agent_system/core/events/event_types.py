@@ -51,6 +51,14 @@ class EventType(str, Enum):
     USER_REQUEST_RECEIVED = "user_request_received"
     USER_RESPONSE_SENT = "user_response_sent"
     USER_FEEDBACK_RECEIVED = "user_feedback_received"
+    
+    # Runtime events
+    RUNTIME_STARTED = "runtime_started"
+    RUNTIME_STOPPED = "runtime_stopped"
+    RUNTIME_ERROR = "runtime_error"
+    EVENT_PROCESSING_FAILED = "event_processing_failed"
+    TASK_MANUAL_HOLD = "task_manual_hold"
+    TASK_STATE_CHANGED = "task_state_changed"
 
 
 class EventOutcome(str, Enum):

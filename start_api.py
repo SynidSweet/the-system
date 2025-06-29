@@ -1,22 +1,29 @@
 #!/usr/bin/env python3
 """
-Standalone API server launcher for The System.
-Properly configures Python path and starts the FastAPI server.
+Full system startup wrapper for The System.
+Uses unified startup configuration for complete system initialization.
 """
 
 import sys
-import os
 from pathlib import Path
 
-# Add the current directory to Python path so agent_system module can be found
+# Add the current directory to Python path
 current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 
-# Now we can import the FastAPI app
-from agent_system.api.main import app
+from start_unified import create_app
+from agent_system.core.startup import StartupConfig, StartupMode
+import uvicorn
 
 if __name__ == "__main__":
-    import uvicorn
+    # Create full system configuration
+    config = StartupConfig.for_mode(StartupMode.FULL)
+    app = create_app(config)
+    
+    print("🚀 Starting The System API (Full Mode)...")
+    print("📄 API Documentation: http://localhost:8000/docs")
+    print("❤️  Health Check: http://localhost:8000/health")
+    print("🌐 Web Interface: http://localhost:8000/app")
     
     # Start the server
     uvicorn.run(

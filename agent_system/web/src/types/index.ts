@@ -74,6 +74,7 @@ export interface PausedTask {
   task_id: number;
   tree_id: string;
   type: 'step_mode_pause';
+  agent_name?: string;
   content: {
     reason: string;
   };
@@ -139,6 +140,50 @@ export interface DocumentBrowserProps {
 
 export interface InitializationPageProps {
   onInitialize: (settings: InitializationSettings) => void;
+}
+
+// Agent Types
+export interface Agent {
+  id: number;
+  name: string;
+  status: string;
+  instruction: string;
+  available_tools: string[];
+  context_documents: string[];
+  model_config: Record<string, any>;
+  permissions: Record<string, any>;
+  version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Document Types
+export interface Document {
+  name: string;
+  title: string;
+  category: string;
+  format: string;
+  content: string;
+  size: number;
+  version?: string;
+  access_level?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Tool Types
+export interface Tool {
+  name: string;
+  description: string;
+  parameters?: {
+    required?: string[];
+    properties?: Record<string, {
+      type: string;
+      description?: string;
+      enum?: string[];
+    }>;
+  };
+  permissions?: string[];
 }
 
 // Error Boundary Types

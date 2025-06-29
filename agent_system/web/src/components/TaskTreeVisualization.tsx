@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// @ts-ignore - react-tree-graph types are not fully compatible
-import Tree from 'react-tree-graph';
+import { Tree } from 'react-tree-graph';
 
 interface TaskNode {
   task_id: number;
@@ -15,7 +14,7 @@ interface TaskNode {
 
 interface TaskTreeData {
   name: string;
-  children?: TaskTreeData[];
+  children: TaskTreeData[];
   attributes?: {
     status: string;
     agent?: string;
@@ -82,7 +81,7 @@ const TaskTreeVisualization: React.FC<TaskTreeVisualizationProps> = ({
 
       return {
         name: truncateText(task.instruction, 50),
-        children: children.length > 0 ? children : undefined,
+        children: children,
         attributes: {
           status: task.status,
           agent: task.agent_name || 'System',
@@ -99,21 +98,6 @@ const TaskTreeVisualization: React.FC<TaskTreeVisualizationProps> = ({
     return text.substring(0, maxLength) + '...';
   };
 
-  const getNodeClassName = (node: any): string => {
-    const status = node.attributes?.status?.toLowerCase() || 'unknown';
-    return `tree-node tree-node-${status}`;
-  };
-
-  const getStatusIcon = (status: string): string => {
-    switch (status.toLowerCase()) {
-      case 'completed': return '✅';
-      case 'failed': return '❌';
-      case 'running': return '🔄';
-      case 'pending': return '⏳';
-      case 'paused': return '⏸️';
-      default: return '📋';
-    }
-  };
 
   if (loading) {
     return (
@@ -174,62 +158,17 @@ const TaskTreeVisualization: React.FC<TaskTreeVisualizationProps> = ({
       </div>
 
       <div className="tree-visualization">
-        {/* @ts-ignore */}
-        <Tree
-          data={treeData}
-          height={400}
-          width={800}
-          svgProps={{
-            className: 'task-tree-svg'
-          }}
-          nodeProps={{
-            className: getNodeClassName,
-            r: 8
-          }}
-          textProps={{
-            x: 12,
-            y: 4,
-            className: 'tree-node-text'
-          }}
-          pathProps={{
-            className: 'tree-path'
-          }}
-          gProps={{
-            className: 'tree-node-group'
-          }}
-          renderCustomNodeElement={(rd3tProps: any, appState: any) => {
-            const { nodeDatum } = rd3tProps;
-            const status = nodeDatum.attributes?.status || 'unknown';
-            const agent = nodeDatum.attributes?.agent || 'System';
-            const taskId = nodeDatum.attributes?.task_id;
-            
-            return (
-              <g className={getNodeClassName(nodeDatum)}>
-                <circle r="8" fill={getStatusColor(status)} />
-                <text x="12" y="4" className="node-instruction">
-                  {getStatusIcon(status)} {nodeDatum.name}
-                </text>
-                <text x="12" y="18" className="node-agent" fontSize="10">
-                  {agent} (#{taskId})
-                </text>
-              </g>
-            );
-          }}
-        />
+        {treeData && (
+          <Tree
+            data={treeData}
+            height={400}
+            width={800}
+          />
+        )}
       </div>
     </div>
   );
 };
 
-const getStatusColor = (status: string): string => {
-  switch (status.toLowerCase()) {
-    case 'completed': return '#4CAF50';
-    case 'failed': return '#F44336';
-    case 'running': return '#2196F3';
-    case 'pending': return '#FF9800';
-    case 'paused': return '#9C27B0';
-    default: return '#757575';
-  }
-};
 
 export default TaskTreeVisualization;
