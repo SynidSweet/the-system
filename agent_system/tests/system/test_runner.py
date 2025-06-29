@@ -14,14 +14,14 @@ from typing import Dict, Optional
 # Add the parent directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from config.database import db_manager
-from config.database import DatabaseManager
-from tools.base_tool import tool_registry
-from tools.core_mcp.core_tools import register_core_tools
-from tools.system_tools.mcp_integrations import register_system_tools
-from tools.system_tools.internal_tools import register_internal_tools
-from core.entities.entity_manager import EntityManager
-from core.runtime.runtime_engine import RuntimeEngine
+from agent_system.config.database import db_manager
+from agent_system.config.database import DatabaseManager
+from agent_system.tools.base_tool import tool_registry
+from agent_system.tools.core_mcp.core_tools import register_core_tools
+from agent_system.tools.system_tools.mcp_integrations import register_system_tools
+from agent_system.tools.system_tools.internal_tools import register_internal_tools
+from agent_system.core.entities.entity_manager import EntityManager
+from agent_system.core.runtime.engine import RuntimeEngine
 
 from .test_utils import TestReporter
 from .health_tests import HealthTests
@@ -46,20 +46,23 @@ class SystemTestRunner:
         # Initialize database
         await db_manager.connect()
         self.database = DatabaseManager()
-        await self.database.initialize()
+        await self.database.connect()
         
-        # Initialize entity manager
+        # Initialize entity manager and runtime engine
         db_path = Path(__file__).parent.parent.parent / "data" / "agent_system.db"
         self.entity_manager = EntityManager(str(db_path))
-        await self.entity_manager.initialize()
         
-        # Initialize runtime engine
-        self.runtime_engine = RuntimeEngine(self.entity_manager)
+        # Create a basic event manager for testing
+        from agent_system.core.events.event_manager import EventManager
+        event_manager = EventManager()
+        
+        # Initialize runtime engine with required arguments
+        self.runtime_engine = RuntimeEngine(event_manager, self.entity_manager)
         
         # Register all tools
-        register_core_tools()
-        register_system_tools()
-        register_internal_tools()
+        register_core_tools(tool_registry)
+        register_system_tools(tool_registry)
+        register_internal_tools(tool_registry)
         
         print("✅ Test environment initialized\n")
     

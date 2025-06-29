@@ -10,7 +10,7 @@ import uuid
 from typing import List
 
 from .test_utils import SuiteResults, PerformanceMonitor
-from core.entities.enums import EntityType
+from agent_system.core.events.event_types import EntityType
 
 
 class PerformanceTests:

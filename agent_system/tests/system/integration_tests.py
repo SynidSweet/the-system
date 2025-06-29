@@ -9,7 +9,8 @@ import asyncio
 from typing import Optional
 
 from .test_utils import SuiteResults
-from core.entities.enums import EntityType, TaskState, ProcessTriggerType
+from agent_system.core.events.event_types import EntityType
+from agent_system.core.entities.task import TaskState
 
 
 class IntegrationTests:
@@ -162,7 +163,7 @@ class IntegrationTests:
             process_entity = await self.entity_manager.create_entity(
                 EntityType.PROCESS,
                 name="neutral_task_process",
-                trigger_type=ProcessTriggerType.TASK_CREATED.value,
+                triggers=["task_created"],
                 description="Main task processing workflow"
             )
         

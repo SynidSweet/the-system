@@ -8,7 +8,8 @@ import uuid
 from datetime import datetime
 
 from .test_utils import SuiteResults, TestResult
-from core.entities.enums import EntityType, TaskState
+from agent_system.core.events.event_types import EntityType
+from agent_system.core.entities.task import TaskState
 
 
 class FunctionalTests:

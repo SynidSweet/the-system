@@ -9,10 +9,7 @@ import statistics
 
 from ..event_types import EventType, EntityType
 from ..models import OptimizationOpportunity
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../..'))
-from config.database import DatabaseManager
+from agent_system.config.database import DatabaseManager
 
 # Create global database instance
 database = DatabaseManager()
