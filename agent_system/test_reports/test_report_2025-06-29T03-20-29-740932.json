@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-06-29T03:20:29.740932",
+  "tests_run": 5,
+  "tests_passed": 4,
+  "tests_failed": 1,
+  "suites": {
+    "Health": {
+      "tests": [
+        {
+          "name": "Database Connectivity",
+          "passed": true,
+          "message": "Test passed successfully",
+          "duration": 7.3909759521484375e-06
+        },
+        {
+          "name": "Agent Configuration",
+          "passed": true,
+          "message": "Test passed successfully",
+          "duration": 6.9141387939453125e-06
+        },
+        {
+          "name": "Tool Registry",
+          "passed": true,
+          "message": "Test passed successfully",
+          "duration": 7.3909759521484375e-06
+        },
+        {
+          "name": "Context Documents",
+          "passed": true,
+          "message": "Test passed successfully",
+          "duration": 2.0503997802734375e-05
+        },
+        {
+          "name": "System Initialization",
+          "passed": false,
+          "message": "Failed: No module named 'aiosqlite'",
+          "duration": 0.015334606170654297
+        }
+      ],
+      "passed": 4,
+      "failed": 1,
+      "duration": 0.01545262336730957
+    }
+  },
+  "duration": 0.015605688095092773,
+  "success": false
+}

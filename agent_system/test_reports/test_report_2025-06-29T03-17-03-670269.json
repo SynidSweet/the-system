@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-06-29T03:17:03.670269",
+  "tests_run": 5,
+  "tests_passed": 0,
+  "tests_failed": 5,
+  "suites": {
+    "Health": {
+      "tests": [
+        {
+          "name": "Database Connectivity",
+          "passed": false,
+          "message": "Failed: 'MockDatabase' object has no attribute 'initialize'",
+          "duration": 7.152557373046875e-06
+        },
+        {
+          "name": "Agent Configuration",
+          "passed": false,
+          "message": "Failed: 'MockDatabase' object has no attribute 'agents'",
+          "duration": 6.198883056640625e-06
+        },
+        {
+          "name": "Tool Registry",
+          "passed": false,
+          "message": "Failed: 'MockToolRegistry' object has no attribute 'get_tool'",
+          "duration": 4.5299530029296875e-06
+        },
+        {
+          "name": "Context Documents",
+          "passed": false,
+          "message": "Failed: 'MockDatabase' object has no attribute 'context_documents'",
+          "duration": 2.86102294921875e-06
+        },
+        {
+          "name": "System Initialization",
+          "passed": false,
+          "message": "Failed: No module named 'aiosqlite'",
+          "duration": 0.02947068214416504
+        }
+      ],
+      "passed": 0,
+      "failed": 5,
+      "duration": 0.029588699340820312
+    }
+  },
+  "duration": 0.02981424331665039,
+  "success": false
+}

@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-06-29T03:11:08.529670",
+  "tests_run": 5,
+  "tests_passed": 0,
+  "tests_failed": 5,
+  "suites": {
+    "Health": {
+      "tests": [
+        {
+          "name": "Database Connectivity",
+          "passed": false,
+          "message": "Failed: 'DatabaseManager' object has no attribute 'initialize'",
+          "duration": 7.3909759521484375e-06
+        },
+        {
+          "name": "Agent Configuration",
+          "passed": false,
+          "message": "Failed: 'DatabaseManager' object has no attribute 'agents'",
+          "duration": 6.9141387939453125e-06
+        },
+        {
+          "name": "Tool Registry",
+          "passed": false,
+          "message": "Failed: Tool create_subtask not found in registry",
+          "duration": 1.0251998901367188e-05
+        },
+        {
+          "name": "Context Documents",
+          "passed": false,
+          "message": "Failed: 'DatabaseManager' object has no attribute 'context_documents'",
+          "duration": 2.6226043701171875e-06
+        },
+        {
+          "name": "System Initialization",
+          "passed": false,
+          "message": "Failed: module 'core.processes.process_registry' has no attribute 'get_all_processes'",
+          "duration": 0.025163650512695312
+        }
+      ],
+      "passed": 0,
+      "failed": 5,
+      "duration": 0.02525043487548828
+    }
+  },
+  "duration": 0.026917219161987305,
+  "success": false
+}

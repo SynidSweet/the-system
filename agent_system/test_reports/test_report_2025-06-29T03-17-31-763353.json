@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-06-29T03:17:31.763353",
+  "tests_run": 5,
+  "tests_passed": 0,
+  "tests_failed": 5,
+  "suites": {
+    "Health": {
+      "tests": [
+        {
+          "name": "Database Connectivity",
+          "passed": false,
+          "message": "Failed: 'MockAgentCollection' object has no attribute 'get_all_active'",
+          "duration": 8.821487426757812e-06
+        },
+        {
+          "name": "Agent Configuration",
+          "passed": false,
+          "message": "Failed: 'MockAgentCollection' object has no attribute 'get_by_name'",
+          "duration": 3.814697265625e-06
+        },
+        {
+          "name": "Tool Registry",
+          "passed": false,
+          "message": "Failed: Tool break_down_task not found in registry",
+          "duration": 3.5762786865234375e-06
+        },
+        {
+          "name": "Context Documents",
+          "passed": false,
+          "message": "Failed: 'MockDocumentCollection' object has no attribute 'get_all'",
+          "duration": 2.384185791015625e-06
+        },
+        {
+          "name": "System Initialization",
+          "passed": false,
+          "message": "Failed: No module named 'aiosqlite'",
+          "duration": 0.01581096649169922
+        }
+      ],
+      "passed": 0,
+      "failed": 5,
+      "duration": 0.015909671783447266
+    }
+  },
+  "duration": 0.01606297492980957,
+  "success": false
+}

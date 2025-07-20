@@ -1,6 +1,6 @@
 # Comprehensive Codebase Refactoring Analysis - 2025
 
-*Generated: 2025-06-28 | Based on Current System Analysis*
+*Generated: 2025-06-28 | Updated: 2025-06-29 (Testing Issues Identified)*
 
 ## Executive Summary
 
@@ -9,17 +9,17 @@ This comprehensive refactoring analysis identifies significant opportunities to 
 **Key Findings:**
 - **2,840 lines** of code analyzed across 5 critical files
 - **40-60% code reduction** possible through targeted refactoring
-- **18 specific refactoring tasks** identified with clear implementation steps
+- **19 specific refactoring tasks** identified with clear implementation steps (includes 2025-06-29 testing fix)
 - **Strong separation of concerns** opportunities throughout the codebase
 - **Significant code duplication** patterns that can be eliminated
 
 **Task Complexity Distribution:**
-- 🟢 **Simple Tasks**: 7 (ready for immediate execution)
+- 🟢 **Simple Tasks**: 8 (ready for immediate execution, includes new testing fix)
 - 🟡 **Moderate Tasks**: 5 (2-3 session planning)
 - 🟠 **Complex Tasks**: 6 (requires investigation and planning)
 - 🔴 **Epic Tasks**: 0
 
-**Estimated Total Effort**: 35-50 hours across 15-20 sessions
+**Estimated Total Effort**: 37-52 hours across 15-20 sessions
 
 **Current Status**: Analysis reveals several architectural opportunities for improvement that would significantly benefit AI agent development efficiency.
 
@@ -47,7 +47,14 @@ This comprehensive refactoring analysis identifies significant opportunities to 
    - Files: Update `core_mcp/core_tools.py` and all tool classes
    - Time: 2 hours
 
-5. **Create Tool Utility Libraries**
+5. **Fix Test System Import Paths** (NEW: 2025-06-29)
+   - Resolve import path issues in modular test architecture
+   - Files: `agent_system/tests/system/*.py` (6 files affected)
+   - Error: `ModuleNotFoundError: No module named 'core'`
+   - Fix: Update relative imports to use proper paths from package root
+   - Time: 1-2 hours
+
+6. **Create Tool Utility Libraries**
    - Extract execution, validation, and permission utilities
    - Files: Create 3 new utility modules in `/agent_system/tools/common/`
    - Time: 2 hours
